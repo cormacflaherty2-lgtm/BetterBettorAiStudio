@@ -79,7 +79,13 @@ async function startServer() {
       });
     }
 
-    const cleanedKey = privateKey.replace(/\\n/g, "\n").replace(/"/g, "").trim();
+    const cleanedKey = privateKey
+      .replace(/^["']|["']$/g, "")  // strip surrounding single or double quotes
+      .replace(/\\n/g, "\n")         // escaped \n → actual newline
+      .replace(/\\r/g, "")           // remove escaped \r
+      .replace(/\r\n/g, "\n")        // Windows CRLF → LF
+      .replace(/\r/g, "\n")          // old Mac CR → LF
+      .trim();
     if (!cleanedKey.startsWith("-----BEGIN PRIVATE KEY-----")) {
       return res.status(400).json({
         error: "Invalid Private Key Format",
