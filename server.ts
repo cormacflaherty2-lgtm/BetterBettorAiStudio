@@ -106,7 +106,11 @@ async function startServer() {
       }
 
       const headers = rows[0];
-      const col = (name: string) => headers.indexOf(name);
+      // Case-insensitive, whitespace-tolerant header lookup
+      const col = (name: string) => {
+        const lower = name.toLowerCase().trim();
+        return headers.findIndex((h: string) => (h ?? "").toLowerCase().trim() === lower);
+      };
 
       // Column indices — mapped to exact MasterRanking header names
       const idx = {
@@ -134,6 +138,9 @@ async function startServer() {
         return isNaN(val) ? 0 : val;
       }
 
+      console.log(`[player-props] Sheet headers:`, headers);
+      console.log(`[player-props] Column indices:`, idx);
+
       const TIER_ORDER: Record<string, number> = { S: 0, A: 1, B: 2, C: 3, D: 4 };
 
       const data = rows
@@ -149,7 +156,6 @@ async function startServer() {
           const bookLine = parseNum(row[idx.bookLine]);
           const aiProj = parseNum(row[idx.aiProj]) || bookLine;
           const edge = parseNum(row[idx.edge]);
-          const confidence = parseNum(row[idx.confidence]);
 
           const g1  = parseNum(row[idx.g1]);
           const g2  = parseNum(row[idx.g2]);
@@ -161,6 +167,18 @@ async function startServer() {
           const g8  = parseNum(row[idx.g8]);
           const g9  = parseNum(row[idx.g9]);
           const g10 = parseNum(row[idx.g10]);
+
+          // Compute hit rate: games where player exceeded the book line
+          const last10Games = [g1, g2, g3, g4, g5, g6, g7, g8, g9, g10];
+          const gamesWithData = last10Games.filter(v => v > 0);
+          const hitsOverLine = gamesWithData.filter(v => v >= bookLine).length;
+          const hitRateL10 = gamesWithData.length > 0
+            ? Math.round((hitsOverLine / gamesWithData.length) * 100)
+            : 0;
+
+          // Normalize confidence: some sheets store 0-1 decimals, others 0-100
+          const rawConf = parseNum(row[idx.confidence]);
+          const confidenceNorm = rawConf > 0 && rawConf <= 1 ? Math.round(rawConf * 100) : Math.round(rawConf);
 
           const playerInitials = playerName
             .split(" ")
@@ -181,10 +199,10 @@ async function startServer() {
             score: 0,
             team: "",
             opponent: "",
-            hitRateL10: 0,
-            hitRateDisplay: "N/A",
-            confidence,
-            confidenceDisplay: `${Math.round(confidence)}%`,
+            hitRateL10,
+            hitRateDisplay: gamesWithData.length > 0 ? `${hitRateL10}%` : "N/A",
+            confidence: confidenceNorm,
+            confidenceDisplay: `${confidenceNorm}%`,
             algoRecord: "",
             modelRecord: "",
             lastResult: "",
@@ -193,7 +211,7 @@ async function startServer() {
             last10Games: [g1, g2, g3, g4, g5, g6, g7, g8, g9, g10],
             edgeDisplay: `${edge >= 0 ? "+" : ""}${edge.toFixed(1)} pts`,
             valueLabel: tier === "S" || tier === "A" ? "High Value" : tier === "B" ? "Medium Value" : "Low Edge",
-            isHighValue: (tier === "S" || tier === "A") && confidence >= 60,
+            isHighValue: (tier === "S" || tier === "A") && confidenceNorm >= 60,
 
             // New schema fields
             playerName,

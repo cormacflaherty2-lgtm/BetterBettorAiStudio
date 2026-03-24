@@ -29,7 +29,7 @@ export function usePlayerProps(sheetName: string = "MasterRanking") {
 
   useEffect(() => {
     fetchProps();
-  }, []);
+  }, [sheetName]);
 
   return { players, loading, error, lastUpdated, refresh: fetchProps };
 }
