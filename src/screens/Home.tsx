@@ -72,6 +72,42 @@ export const Home: React.FC<HomeProps> = ({
     });
   }, [playerProps, searchQuery, activeCategory]);
 
+  const PropCardSkeleton = () => (
+    <div className="bg-[#0F1629] border border-purple-500/15 rounded-2xl p-4 mb-3 animate-pulse">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-purple-900/40 shrink-0" />
+          <div className="flex flex-col gap-1.5">
+            <div className="h-3.5 w-28 bg-purple-900/40 rounded" />
+            <div className="h-2.5 w-16 bg-purple-900/20 rounded" />
+          </div>
+        </div>
+        <div className="h-6 w-14 bg-purple-900/40 rounded-full" />
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        <div className="flex flex-col gap-1">
+          <div className="h-2 w-12 bg-purple-900/20 rounded" />
+          <div className="h-3.5 w-16 bg-purple-900/40 rounded" />
+        </div>
+        <div className="flex flex-col gap-1">
+          <div className="h-2 w-10 bg-purple-900/20 rounded" />
+          <div className="h-3.5 w-14 bg-purple-900/40 rounded" />
+        </div>
+        <div className="flex flex-col gap-1 items-end">
+          <div className="h-2 w-8 bg-purple-900/20 rounded" />
+          <div className="h-3.5 w-12 bg-purple-900/40 rounded" />
+        </div>
+      </div>
+      <div className="mt-3 pt-3 border-t border-white/5">
+        <div className="flex items-center justify-between mb-1.5">
+          <div className="h-2 w-16 bg-purple-900/20 rounded" />
+          <div className="h-2.5 w-8 bg-purple-900/20 rounded" />
+        </div>
+        <div className="h-[3px] w-full rounded-full bg-purple-900/20" />
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex flex-col gap-6 pb-24">
       {/* Header */}
@@ -162,10 +198,21 @@ export const Home: React.FC<HomeProps> = ({
 
       {/* Props Feed */}
       <div className="flex flex-col gap-3 px-5 min-h-[400px]">
-        {filteredAndSortedProps.length > 0 ? (
+        {loading ? (
+          <>
+            <PropCardSkeleton />
+            <PropCardSkeleton />
+            <PropCardSkeleton />
+          </>
+        ) : filteredAndSortedProps.length > 0 ? (
           filteredAndSortedProps.map((prop) => (
             <PropCard key={prop.id} prop={prop} onClick={onPropClick} />
           ))
+        ) : (searchQuery.trim() || activeCategory !== "All Props") ? (
+          <div className="flex flex-col items-center justify-center py-20 text-slate-500">
+            <Search size={48} className="mb-4 opacity-20" />
+            <p className="body-text">No props match your filters</p>
+          </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-slate-500">
             <Search size={48} className="mb-4 opacity-20" />

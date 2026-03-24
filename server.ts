@@ -235,6 +235,7 @@ async function startServer() {
 
       console.log(`[player-props] Total rows: ${totalRows}, after filter: ${data.length}`);
       console.log(`[player-props] Loaded ${data.length} players. First player:`, JSON.stringify(data[0], null, 2));
+      console.log(`[player-props] Sending HTTP 200 — ${data.length} props`);
 
       res.json({ data, lastUpdated: new Date().toISOString() });
     } catch (error: any) {

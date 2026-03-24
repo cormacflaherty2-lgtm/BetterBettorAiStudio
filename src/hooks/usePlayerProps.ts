@@ -11,11 +11,13 @@ export function usePlayerProps(sheetName: string = "MasterRanking") {
     try {
       setLoading(true);
       const response = await fetch(`/api/player-props?sheet=${encodeURIComponent(sheetName)}`);
+      console.log(`[usePlayerProps] Response status: ${response.status}`);
       if (!response.ok) {
         const errData = await response.json();
         throw new Error(errData.error || "Failed to fetch data");
       }
       const data = await response.json();
+      console.log(`[usePlayerProps] Received ${data.data?.length ?? 0} players from API`);
       setPlayers(data.data);
       setLastUpdated(data.lastUpdated ? new Date(data.lastUpdated) : new Date());
       setError(null);
