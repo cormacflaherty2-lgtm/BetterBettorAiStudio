@@ -13,7 +13,9 @@ export function usePlayerProps(sheetName: string = "MasterRanking") {
       const response = await fetch(`/api/player-props?sheet=${encodeURIComponent(sheetName)}`);
       if (!response.ok) {
         const errData = await response.json();
-        throw new Error(errData.error || "Failed to fetch data");
+        const msg = errData.error || "Failed to fetch data";
+        const detail = errData.details || "";
+        throw new Error(detail ? `${msg}: ${detail}` : msg);
       }
       const data = await response.json();
       setPlayers(data.data);
