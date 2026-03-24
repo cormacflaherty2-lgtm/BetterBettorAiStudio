@@ -57,9 +57,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const headers = rows[0];
-    const col = (name: string) => headers.indexOf(name);
+    console.log("[player-props] Sheet headers:", JSON.stringify(headers));
 
-    // Column indices — mapped to exact MasterRanking header names
+    // Case-insensitive, trim-tolerant column lookup
+    const col = (name: string) => {
+      const target = name.toLowerCase().trim();
+      return headers.findIndex((h: string) => h?.toLowerCase().trim() === target);
+    };
+
+    // Column indices — mapped to MasterRanking header names
     const idx = {
       playerName: col("Player Name"),
       tier:       col("Tier"),
@@ -79,12 +85,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       g10:        col("G10"),
     };
 
+    console.log("[player-props] Column indices:", JSON.stringify(idx));
+
+    if (idx.playerName === -1) {
+      console.error("[player-props] Column 'Player Name' not found. Headers:", headers);
+      return res.status(500).json({
+        error: "Column mapping failed",
+        details: `'Player Name' column not found in sheet. Headers found: ${headers.join(", ")}`,
+      });
+    }
+
+    const totalRows = rows.length - 1;
+
     const data = rows
       .slice(1)
       .filter((row) => {
-        const playerName = row[idx.playerName];
-        const bookLine = parseNum(row[idx.bookLine]);
-        return playerName && playerName.trim() !== "" && bookLine !== 0;
+        const playerName = idx.playerName >= 0 ? row[idx.playerName] : undefined;
+        return playerName && playerName.trim() !== "";
       })
       .map((row, rowIndex) => {
         const playerName = (row[idx.playerName] || "").trim();
@@ -159,6 +176,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return b.edge - a.edge;
       });
 
+    console.log(`[player-props] Total rows: ${totalRows}, after filter: ${data.length}`);
     console.log(`[player-props] Loaded ${data.length} players. First player:`, JSON.stringify(data[0], null, 2));
 
     res.json({ data, lastUpdated: new Date().toISOString() });
