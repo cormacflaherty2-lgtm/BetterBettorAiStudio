@@ -62,12 +62,12 @@ async function startServer() {
     const sheetId = process.env.VITE_SHEET_ID;
     const email = process.env.VITE_GOOGLE_SERVICE_ACCOUNT_EMAIL;
     const privateKey = process.env.VITE_GOOGLE_PRIVATE_KEY;
-    const requestedSheet = req.query.sheet as string || "MasterRanking";
+    const requestedSheet = (req.query.sheet as string) || "MasterRanking";
 
     if (!sheetId || !email || !privateKey) {
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: "Developer credentials not configured",
-        details: `Missing: ${!sheetId ? 'VITE_SHEET_ID ' : ''}${!email ? 'VITE_GOOGLE_SERVICE_ACCOUNT_EMAIL ' : ''}${!privateKey ? 'VITE_GOOGLE_PRIVATE_KEY' : ''}`
+        details: `Missing: ${!sheetId ? "VITE_SHEET_ID " : ""}${!email ? "VITE_GOOGLE_SERVICE_ACCOUNT_EMAIL " : ""}${!privateKey ? "VITE_GOOGLE_PRIVATE_KEY" : ""}`,
       });
     }
 
@@ -75,15 +75,15 @@ async function startServer() {
     if (!trimmedEmail.includes(".iam.gserviceaccount.com")) {
       return res.status(400).json({
         error: "Invalid Service Account Email",
-        details: "The email must be a Google Service Account email ending in '.iam.gserviceaccount.com'. Regular Gmail addresses will not work."
+        details: "The email must be a Google Service Account email ending in '.iam.gserviceaccount.com'. Regular Gmail addresses will not work.",
       });
     }
 
-    const cleanedKey = privateKey.replace(/\\n/g, '\n').replace(/"/g, '').trim();
+    const cleanedKey = privateKey.replace(/\\n/g, "\n").replace(/"/g, "").trim();
     if (!cleanedKey.startsWith("-----BEGIN PRIVATE KEY-----")) {
       return res.status(400).json({
         error: "Invalid Private Key Format",
-        details: "The private key must start with '-----BEGIN PRIVATE KEY-----'. Ensure you copied the entire key from the JSON file."
+        details: "The private key must start with '-----BEGIN PRIVATE KEY-----'. Ensure you copied the entire key from the JSON file.",
       });
     }
 
@@ -91,7 +91,7 @@ async function startServer() {
       const auth = new google.auth.JWT({
         email: trimmedEmail,
         key: cleanedKey,
-        scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
+        scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
       });
 
       const sheets = google.sheets({ version: "v4", auth });
@@ -106,146 +106,125 @@ async function startServer() {
       }
 
       const headers = rows[0];
-      
-      // Map columns by their exact header name
-      const getColIndex = (name: string) => headers.indexOf(name);
-      
+      const col = (name: string) => headers.indexOf(name);
+
+      // Column indices — mapped to exact MasterRanking header names
       const idx = {
-        algoRecord: getColIndex("AlgO"),
-        modelRecord: getColIndex("ModelO"),
-        lastResult: getColIndex("Hit/Miss"),
-        player: getColIndex("Player"),
-        playType: getColIndex("Play Type"),
-        line: getColIndex("Line"),
-        projectedPts: getColIndex("AvgLine"),
-        tier: getColIndex("Tier"),
-        score: getColIndex("Score"),
-        team: getColIndex("Team"),
-        opponent: getColIndex("Opponent"),
-        hitRateL10: getColIndex("L10 HR%"),
-        biasScore: getColIndex("BiasScore"),
-        confidence: getColIndex("Confidence"),
-        algoModelBlend: getColIndex("Algo-Model Blend"),
-        tierRank: getColIndex("TierRank"),
-        allAgree: getColIndex("All Agree"),
-        nAlgoDiff: getColIndex("NAlgo %D"),
-        oAlgoDiff: getColIndex("OAlgo %D"),
+        playerName: col("Player Name"),
+        tier:       col("Tier"),
+        bookLine:   col("Book Line"),
+        aiProj:     col("AI Proj"),
+        edge:       col("Edge"),
+        confidence: col("Confidence"),
+        g1:         col("G1"),
+        g2:         col("G2"),
+        g3:         col("G3"),
+        g4:         col("G4"),
+        g5:         col("G5"),
+        g6:         col("G6"),
+        g7:         col("G7"),
+        g8:         col("G8"),
+        g9:         col("G9"),
+        g10:        col("G10"),
       };
 
-      function parseHitRate(raw: any): number {
-        const val = parseFloat(String(raw));
-        if (isNaN(val)) return 0;
-        // If the value is already > 1, it was sent as a whole percent (e.g. 70 means 70%)
-        // If the value is <= 1, it is a decimal that needs multiplying (e.g. 0.7 means 70%)
-        return val > 1 ? val : val * 100;
-      }
-
-      function parsePercentString(raw: any): number {
-        if (!raw) return 0;
-        const cleaned = String(raw).replace(/%/g, '').trim();
-        const val = parseFloat(cleaned);
+      function parseNum(raw: any): number {
+        if (raw === undefined || raw === null || raw === "") return 0;
+        const val = parseFloat(String(raw).replace(/%/g, "").trim());
         return isNaN(val) ? 0 : val;
       }
 
-      // Audit Logging
-      console.log("--- Numeric Audit ---");
-      const auditRows = rows.slice(1, 4);
-      auditRows.forEach((row, i) => {
-        console.log(`Row ${i + 1}:`);
-        console.log(`  L10 HR%: raw="${row[idx.hitRateL10]}", converted=${parseHitRate(row[idx.hitRateL10])}`);
-        console.log(`  Confidence: raw="${row[idx.confidence]}", converted=${parseFloat(row[idx.confidence])}`);
-        console.log(`  Score: raw="${row[idx.score]}", converted=${parseFloat(row[idx.score])}`);
-        console.log(`  Algo-Model Blend: raw="${row[idx.algoModelBlend]}", converted=${parseFloat(row[idx.algoModelBlend])}`);
-        console.log(`  Line: raw="${row[idx.line]}", converted=${parseFloat(row[idx.line])}`);
-        console.log(`  AvgLine: raw="${row[idx.projectedPts]}", converted=${row[idx.projectedPts] ? parseFloat(row[idx.projectedPts]) : 'blank'}`);
-      });
-      
-      const dataRows = rows.slice(1);
+      const TIER_ORDER: Record<string, number> = { S: 0, A: 1, B: 2, C: 3, D: 4 };
 
-      const data = dataRows
-        .filter(row => {
-          const player = row[idx.player];
-          const line = parseFloat(row[idx.line]);
-          return player && player.trim() !== "" && !isNaN(line) && line !== 0;
+      const data = rows
+        .slice(1)
+        .filter((row) => {
+          const playerName = row[idx.playerName];
+          const bookLine = parseNum(row[idx.bookLine]);
+          return playerName && playerName.trim() !== "" && bookLine !== 0;
         })
         .map((row, rowIndex) => {
-          const player = row[idx.player] || "";
-          const line = parseFloat(row[idx.line]) || 0;
-          const rawAvgLine = row[idx.projectedPts];
-          const projectedPts = (rawAvgLine && rawAvgLine.trim() !== "") ? parseFloat(rawAvgLine) : line;
-          
-          const rawScore = row[idx.score];
-          const score = isNaN(parseFloat(rawScore)) ? 0 : parseFloat(rawScore);
-          
-          const hitRateL10 = parseHitRate(row[idx.hitRateL10]);
-          const confidence = parseFloat(row[idx.confidence]) || 0;
-          const tier = row[idx.tier] || "C";
-          
-          const diff = projectedPts - line;
+          const playerName = (row[idx.playerName] || "").trim();
+          const tier = ((row[idx.tier] || "C").trim().toUpperCase());
+          const bookLine = parseNum(row[idx.bookLine]);
+          const aiProj = parseNum(row[idx.aiProj]) || bookLine;
+          const edge = parseNum(row[idx.edge]);
+          const confidence = parseNum(row[idx.confidence]);
 
-          // Extract last 10 games from columns 37-46 (index 36-45)
-          const last10Games = [];
-          for (let i = 36; i <= 45; i++) {
-            const val = parseFloat(row[i]);
-            last10Games.push(isNaN(val) ? 0 : val);
-          }
+          const g1  = parseNum(row[idx.g1]);
+          const g2  = parseNum(row[idx.g2]);
+          const g3  = parseNum(row[idx.g3]);
+          const g4  = parseNum(row[idx.g4]);
+          const g5  = parseNum(row[idx.g5]);
+          const g6  = parseNum(row[idx.g6]);
+          const g7  = parseNum(row[idx.g7]);
+          const g8  = parseNum(row[idx.g8]);
+          const g9  = parseNum(row[idx.g9]);
+          const g10 = parseNum(row[idx.g10]);
 
-          const playerInitials = player.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-          const matchup = `${row[idx.team] || ""} vs ${row[idx.opponent] || ""}`;
+          const playerInitials = playerName
+            .split(" ")
+            .map((n: string) => n[0] || "")
+            .join("")
+            .toUpperCase()
+            .slice(0, 2);
 
-          const mapped = {
-            id: encodeURIComponent(`${player}-${rowIndex}`),
-            player,
-            playerName: player,
-            playerInitials,
-            team: row[idx.team] || "",
-            opponent: row[idx.opponent] || "",
-            line,
-            playType: (row[idx.playType] || "OVER").toUpperCase(),
-            propType: "PTS", // Default or map from playType if possible, but frontend expects propType
-            projectedPts,
-            projection: projectedPts,
-            diff,
-            edge: diff,
-            matchup,
+          return {
+            // PlayerProp required fields
+            id: encodeURIComponent(`${playerName}-${rowIndex}`),
+            player: playerName,
+            playType: "OVER" as const,
+            line: bookLine,
+            projectedPts: aiProj,
+            diff: edge,
             tier,
-            score,
-            hitRateL10,
+            score: 0,
+            team: "",
+            opponent: "",
+            hitRateL10: 0,
+            hitRateDisplay: "N/A",
             confidence,
-            algoRecord: row[idx.algoRecord] || "0 - 0",
-            modelRecord: row[idx.modelRecord] || "0 - 0",
-            lastResult: row[idx.lastResult] || "",
-            algoModelBlend: isNaN(parseFloat(row[idx.algoModelBlend])) ? 0 : parseFloat(row[idx.algoModelBlend]),
-            tierRank: parseInt(row[idx.tierRank]) || 0,
-            biasScore: parseFloat(row[idx.biasScore]) || 0,
-            allAgree: parseHitRate(row[idx.allAgree]),
-            nAlgoDiff: parsePercentString(row[idx.nAlgoDiff]),
-            oAlgoDiff: parsePercentString(row[idx.oAlgoDiff]),
-            last10Games,
-            
-            // Derived values computed here for the API response
-            hitRateDisplay: `${hitRateL10.toFixed(0)}%`,
             confidenceDisplay: `${Math.round(confidence)}%`,
-            edgeDisplay: `${diff >= 0 ? "+" : ""}${diff.toFixed(1)} pts`,
-            valueLabel: score >= 40 ? "High Value" : score >= 20 ? "Medium Value" : "Low Edge",
+            algoRecord: "",
+            modelRecord: "",
+            lastResult: "",
+            algoModelBlend: 0,
+            tierRank: TIER_ORDER[tier] ?? 99,
+            last10Games: [g1, g2, g3, g4, g5, g6, g7, g8, g9, g10],
+            edgeDisplay: `${edge >= 0 ? "+" : ""}${edge.toFixed(1)} pts`,
+            valueLabel: tier === "S" || tier === "A" ? "High Value" : tier === "B" ? "Medium Value" : "Low Edge",
             isHighValue: (tier === "S" || tier === "A") && confidence >= 60,
+
+            // New schema fields
+            playerName,
+            playerInitials,
+            bookLine,
+            aiProj,
+            edge,
+            g1, g2, g3, g4, g5, g6, g7, g8, g9, g10,
+
+            // PropCard display fields
+            projection: aiProj,
+            matchup: "",
+            propType: "pts",
           };
-
-          if (player.includes("Marcus Smart")) {
-            console.log("Marcus Smart Mapped Object:", JSON.stringify(mapped, null, 2));
-          }
-
-          return mapped;
+        })
+        .sort((a, b) => {
+          const tierA = TIER_ORDER[a.tier] ?? 99;
+          const tierB = TIER_ORDER[b.tier] ?? 99;
+          if (tierA !== tierB) return tierA - tierB;
+          return b.edge - a.edge;
         });
 
-      console.log("First 3 Mapped PlayerProp Objects:", JSON.stringify(data.slice(0, 3), null, 2));
+      console.log(`[player-props] Loaded ${data.length} players. First player:`, JSON.stringify(data[0], null, 2));
+
       res.json({ data, lastUpdated: new Date().toISOString() });
     } catch (error: any) {
       console.error("Error fetching player props from master sheet:", error);
-      res.status(500).json({ 
-        error: "Failed to fetch data from Google Sheets", 
+      res.status(500).json({
+        error: "Failed to fetch data from Google Sheets",
         details: error.message,
-        code: error.code
+        code: error.code,
       });
     }
   });

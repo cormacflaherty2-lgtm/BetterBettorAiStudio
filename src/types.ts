@@ -24,13 +24,28 @@ export interface PlayerProp {
   edgeDisplay: string;
   valueLabel: string;
   isHighValue: boolean;
-  // Keep some old fields for compatibility if needed, or just follow user's new structure
-  playerName?: string;
-  playerInitials?: string;
-  propType?: string;
-  projection?: number;
-  edge?: number;
-  matchup?: string;
+
+  // New MasterRanking schema fields
+  playerName: string;
+  playerInitials: string;
+  bookLine: number;
+  aiProj: number;
+  edge: number;
+  g1: number;
+  g2: number;
+  g3: number;
+  g4: number;
+  g5: number;
+  g6: number;
+  g7: number;
+  g8: number;
+  g9: number;
+  g10: number;
+
+  // PropCard display fields
+  projection: number;
+  matchup: string;
+  propType: string;
   category?: string;
 }
 
