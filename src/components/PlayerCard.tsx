@@ -14,9 +14,13 @@ const TIER_BG: Record<string, string> = {
 };
 
 export const PlayerCard: React.FC<PlayerCardProps> = ({ prop, onClick }) => {
-  const { confidence, probHit, newAlgoDif, newAlgoDiffNum, hitMiss } = prop;
+  const { hitMiss } = prop;
+  const confidence = prop.confidence ?? 0;
+  const probHit = prop.probHit ?? 0;
+  const newAlgoDif = prop.newAlgoDif || '—';
+  const newAlgoDiffNum = Number(prop.newAlgoDiffNum ?? 0);
 
-  const tierBg = TIER_BG[prop.tier] ?? "bg-[#6B7280]";
+  const tierBg = TIER_BG[prop.tier ?? 'C'] ?? "bg-[#6B7280]";
 
   const confColor =
     confidence > 70 ? "text-[#22C55E]" :
@@ -35,9 +39,9 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ prop, onClick }) => {
       {/* TOP ROW */}
       <div className="flex justify-between items-start">
         <div>
-          <p className="text-[17px] font-bold text-white leading-tight">{prop.playerName}</p>
+          <p className="text-[17px] font-bold text-white leading-tight">{prop.playerName ?? 'Unknown Player'}</p>
           <p className="text-[12px] text-white/45 mt-0.5">
-            {prop.team} vs {prop.opponent}
+            {prop.team ?? ''} vs {prop.opponent ?? ''}
           </p>
         </div>
         <div className="flex items-center gap-1.5">
@@ -62,7 +66,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ prop, onClick }) => {
           {prop.projPoints || prop.line}
         </p>
         <p className="text-[10px] text-white/35">PROJ</p>
-        <p className="text-[14px] text-white/60 mt-1">Line: {prop.line}</p>
+        <p className="text-[14px] text-white/60 mt-1">Line: {prop.line ?? '—'}</p>
 
         {/* OVER / UNDER buttons */}
         <div className="flex gap-2 mt-3">
@@ -95,13 +99,13 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ prop, onClick }) => {
       <div className="flex justify-between mt-4">
         {/* Confidence */}
         <div className="flex flex-col items-center gap-0.5">
-          <span className={cn("text-[15px] font-bold", confColor)}>{confidence}%</span>
+          <span className={cn("text-[15px] font-bold", confColor)}>{confidence ?? 0}%</span>
           <span className="text-[10px] text-white/40">CONF</span>
         </div>
 
         {/* Prob Hit */}
         <div className="flex flex-col items-center gap-0.5">
-          <span className="text-[15px] font-bold text-white">{probHit}%</span>
+          <span className="text-[15px] font-bold text-white">{probHit ?? 0}%</span>
           <span className="text-[10px] text-white/40">PROB HIT</span>
         </div>
 

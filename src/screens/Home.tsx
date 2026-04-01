@@ -2,7 +2,6 @@ import React, { useState, useMemo } from "react";
 import { Bell, Search, X } from "lucide-react";
 import { PlayerCard } from "../components/PlayerCard";
 import { PropTypeDropdown } from "../components/PropTypeDropdown";
-import { MOCK_PROPS } from "../mockData";
 import { PlayerProp } from "../types";
 import { cn } from "../lib/utils";
 import { motion, AnimatePresence } from "motion/react";
