@@ -59,9 +59,9 @@ const App: React.FC = () => {
           <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-red-500">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           </div>
-          <h2 className="text-xl font-bold text-white">Sheet Connection Failed</h2>
+          <h2 className="text-xl font-bold text-white">Data Connection Failed</h2>
           <p className="text-slate-400 text-sm">
-            {error}. Please check your Google Sheet ID and Service Account credentials in the settings.
+            {error}. Please check your Supabase credentials in the environment settings.
           </p>
           <button 
             onClick={refresh}
