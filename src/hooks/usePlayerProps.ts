@@ -1,7 +1,14 @@
-import { useState, useEffect } from "react";
-import { PlayerProp } from "../types";
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { mapSupabaseRow } from '../lib/playerProps';
+import { PlayerProp } from '../types';
 
-export function usePlayerProps(sheetName: string = "MasterRanking") {
+/**
+ * Fetches player props from Supabase and maps them to the PlayerProp interface.
+ * The _sheetName parameter is kept for API compatibility but is unused —
+ * Supabase has a single player_props table.
+ */
+export function usePlayerProps(_sheetName: string = 'MasterRanking') {
   const [players, setPlayers] = useState<PlayerProp[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -10,19 +17,31 @@ export function usePlayerProps(sheetName: string = "MasterRanking") {
   const fetchProps = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/player-props?sheet=${encodeURIComponent(sheetName)}`);
-      if (!response.ok) {
-        const errData = await response.json();
-        const msg = errData.error || "Failed to fetch data";
-        const detail = errData.details || "";
-        throw new Error(detail ? `${msg}: ${detail}` : msg);
+
+      const { data, error: sbError } = await supabase
+        .from('AppData')
+        .select('*')
+        .not('player_name', 'is', null)
+        .order('confidence', { ascending: false })
+        .limit(50);
+
+      if (sbError) {
+        console.error('[usePlayerProps] Full Supabase error:', JSON.stringify(sbError));
+        throw sbError;
       }
-      const data = await response.json();
-      setPlayers(data.data);
-      setLastUpdated(data.lastUpdated ? new Date(data.lastUpdated) : new Date());
+
+      console.log(`[usePlayerProps] Received ${(data ?? []).length} rows`);
+      if ((data ?? []).length > 0) {
+        console.log('[usePlayerProps] First row (raw):', JSON.stringify(data![0]));
+      }
+
+      const mapped = (data ?? []).map(mapSupabaseRow);
+
+      setPlayers(mapped);
+      setLastUpdated(new Date());
       setError(null);
     } catch (err: any) {
-      console.error("Error fetching props:", err);
+      console.error('[usePlayerProps] Supabase fetch failed:', err.message);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -31,7 +50,7 @@ export function usePlayerProps(sheetName: string = "MasterRanking") {
 
   useEffect(() => {
     fetchProps();
-  }, [sheetName]);
+  }, []);
 
   return { players, loading, error, lastUpdated, refresh: fetchProps };
 }

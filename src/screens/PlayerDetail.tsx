@@ -5,6 +5,8 @@ import { BarChart } from "../components/BarChart";
 import { PlayerProp, GameStat } from "../types";
 import { MOCK_GAME_STATS } from "../mockData";
 import { cn } from "../lib/utils";
+import { supabase } from "../lib/supabase";
+import { mapSupabaseRow } from "../lib/playerProps";
 
 interface PlayerDetailProps {
   prop: PlayerProp;
@@ -20,15 +22,13 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
     const fetchLatestData = async () => {
       try {
         setLoading(true);
-        // We fetch all props and find our player to ensure we have the absolute latest from the sheet
-        const response = await fetch("/api/player-props");
-        if (response.ok) {
-          const result = await response.json();
-          const latestProp = result.data.find((p: PlayerProp) => p.player === initialProp.player);
-          if (latestProp) {
-            setProp(latestProp);
-          }
-        }
+        const { data, error: sbError } = await supabase
+          .from('player_props')
+          .select('*')
+          .eq('player_name', initialProp.player)
+          .single();
+        if (sbError) throw sbError;
+        if (data) setProp(mapSupabaseRow(data, 0));
       } catch (err) {
         console.error("Failed to fetch real-time player data:", err);
       } finally {

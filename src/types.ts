@@ -19,6 +19,7 @@ export interface PlayerProp {
   modelRecord: string;
   lastResult: string;
   algoModelBlend: number;
+  biasScore: number;
   tierRank: number;
   last10Games: number[];
   edgeDisplay: string;
@@ -47,6 +48,16 @@ export interface PlayerProp {
   matchup: string;
   propType: string;
   category?: string;
+
+  // AppData schema fields
+  projPoints: number;
+  probHit: number;
+  newAlgoDif: string;
+  newAlgoDiffNum: number;
+  rollingAvg: number;
+  hitMiss: string;
+  avgLine: number;
+  agree: number;
 }
 
 export interface Alert {
