@@ -1,18 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-
-const testQuery = async () => {
-  const { data, error } = await supabase
-    .from('AppData')
-    .select('*')
-    .limit(3);
-  console.log('TEST QUERY RESULT:');
-  console.log('Rows returned:', data?.length);
-  console.log('First row keys:', Object.keys(data?.[0] || {}));
-  console.log('First row sample:', JSON.stringify(data?.[0]));
-  console.log('Error:', error);
-};
-testQuery();
 import { mapSupabaseRow } from '../lib/playerProps';
 import { PlayerProp } from '../types';
 
