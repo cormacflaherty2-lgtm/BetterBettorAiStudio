@@ -14,18 +14,20 @@ interface HomeProps {
   lastUpdated: Date | null;
   onRefresh: () => void;
   loading: boolean;
+  error: string | null;
   onNavigateToNotifications: () => void;
   activeSheet: string;
   onSheetChange: (sheet: string) => void;
 }
 
-export const Home: React.FC<HomeProps> = ({ 
-  onPropClick, 
-  unreadCount, 
-  playerProps, 
-  lastUpdated, 
-  onRefresh, 
+export const Home: React.FC<HomeProps> = ({
+  onPropClick,
+  unreadCount,
+  playerProps,
+  lastUpdated,
+  onRefresh,
   loading,
+  error,
   onNavigateToNotifications,
   activeSheet,
   onSheetChange
@@ -51,7 +53,10 @@ export const Home: React.FC<HomeProps> = ({
     if (activeCategory === "AI Best Picks") {
       filtered = filtered.filter(p => p.tier === "S" || p.tier === "A");
     } else if (activeCategory === "Popular Picks") {
-      filtered = filtered.filter(p => p.confidence >= 70);
+      filtered = filtered.filter(p => {
+        const conf = p.confidence > 1 ? p.confidence : p.confidence * 100;
+        return conf > 70;
+      });
     }
 
     // Search filter
@@ -204,6 +209,16 @@ export const Home: React.FC<HomeProps> = ({
             <PropCardSkeleton />
             <PropCardSkeleton />
           </>
+        ) : error && playerProps.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <p className="body-text text-white/30">Unable to load players</p>
+            <button
+              onClick={onRefresh}
+              className="px-6 py-2 rounded-[20px] border border-[#A855F7] text-[#A855F7] font-medium text-sm active:scale-95 transition-transform"
+            >
+              Retry
+            </button>
+          </div>
         ) : filteredAndSortedProps.length > 0 ? (
           filteredAndSortedProps.map((prop) => (
             <PlayerCard key={prop.id} prop={prop} onClick={onPropClick} />
@@ -216,8 +231,8 @@ export const Home: React.FC<HomeProps> = ({
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-slate-500">
             <Search size={48} className="mb-4 opacity-20" />
-            <p className="body-text">No players available right now</p>
-            <p className="text-[12px] text-slate-600 mt-1">Check back before game time</p>
+            <p className="body-text text-white/30">No players available right now</p>
+            <p className="text-[12px] text-white/20 mt-1">Check back before game time</p>
           </div>
         )}
       </div>

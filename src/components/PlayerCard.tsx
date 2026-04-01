@@ -56,10 +56,10 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ prop, onClick }) => {
       {/* MIDDLE SECTION */}
       <div className="text-center my-4">
         <p className="text-[11px] text-white/40 uppercase tracking-[1.5px]">
-          {(prop.propType || "pts").toUpperCase()}
+          {prop.propType || "POINTS"}
         </p>
         <p className="text-[38px] font-bold text-white leading-none mt-1">
-          {prop.projPoints}
+          {prop.projPoints || prop.line}
         </p>
         <p className="text-[10px] text-white/35">PROJ</p>
         <p className="text-[14px] text-white/60 mt-1">Line: {prop.line}</p>

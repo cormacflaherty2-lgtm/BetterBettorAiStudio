@@ -83,13 +83,14 @@ const App: React.FC = () => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <Home 
-              onPropClick={handlePropClick} 
-              unreadCount={unreadAlerts} 
+            <Home
+              onPropClick={handlePropClick}
+              unreadCount={unreadAlerts}
               playerProps={players}
               lastUpdated={lastUpdated}
               onRefresh={refresh}
               loading={loading}
+              error={error}
               onNavigateToNotifications={() => setActiveTab("alerts")}
               activeSheet={activeSheet}
               onSheetChange={setActiveSheet}

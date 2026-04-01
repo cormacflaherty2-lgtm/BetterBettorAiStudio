@@ -3,11 +3,6 @@ import { supabase } from '../lib/supabase';
 import { mapSupabaseRow } from '../lib/playerProps';
 import { PlayerProp } from '../types';
 
-/**
- * Fetches player props from Supabase and maps them to the PlayerProp interface.
- * The _sheetName parameter is kept for API compatibility but is unused —
- * Supabase has a single player_props table.
- */
 export function usePlayerProps(_sheetName: string = 'MasterRanking') {
   const [players, setPlayers] = useState<PlayerProp[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,31 +12,40 @@ export function usePlayerProps(_sheetName: string = 'MasterRanking') {
   const fetchProps = async () => {
     try {
       setLoading(true);
+      setError(null);
 
       const { data, error: sbError } = await supabase
         .from('AppData')
         .select('*')
         .not('player_name', 'is', null)
+        .neq('player_name', '')
         .order('confidence', { ascending: false })
         .limit(50);
 
+      console.log('SUPABASE RESPONSE:', {
+        rowCount: data?.length,
+        firstRow: data?.[0],
+        error: sbError,
+        errorMessage: sbError?.message,
+        errorCode: (sbError as any)?.code,
+      });
+
       if (sbError) {
-        console.error('[usePlayerProps] Full Supabase error:', JSON.stringify(sbError));
-        throw sbError;
+        console.error('Supabase error:', sbError);
+        console.error('Error details:', JSON.stringify(sbError));
+        setError(sbError.message);
+        return;
       }
 
-      console.log(`[usePlayerProps] Received ${(data ?? []).length} rows`);
+      console.log('Data received:', data?.length, 'rows');
       if ((data ?? []).length > 0) {
-        console.log('[usePlayerProps] First row (raw):', JSON.stringify(data![0]));
+        console.log('First row:', JSON.stringify(data![0]));
       }
 
-      const mapped = (data ?? []).map(mapSupabaseRow);
-
-      setPlayers(mapped);
+      setPlayers((data ?? []).map(mapSupabaseRow));
       setLastUpdated(new Date());
-      setError(null);
     } catch (err: any) {
-      console.error('[usePlayerProps] Supabase fetch failed:', err.message);
+      console.error('[usePlayerProps] Unexpected error:', err.message);
       setError(err.message);
     } finally {
       setLoading(false);
