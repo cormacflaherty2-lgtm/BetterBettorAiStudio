@@ -33,7 +33,8 @@ export function mapSupabaseRow(row: any, index: number): PlayerProp {
   const rawConf     = Number(row.confidence ?? 0);
   const confidence  = rawConf > 1 ? Math.round(rawConf) : Math.round(rawConf * 100);
 
-  const probHit     = Math.round(Number(row.prob_hit ?? 0) * 100);
+  const rawProbHit  = Number(row.prob_hit ?? 0);
+  const probHit     = rawProbHit > 1 ? Math.round(rawProbHit) : Math.round(rawProbHit * 100);
   const projPoints  = Number(row.proj_points ?? 0);
   const line        = Number(row.line ?? 0);
   const avgLine     = Number(row.avg_line ?? 0);
@@ -97,7 +98,7 @@ export function mapSupabaseRow(row: any, index: number): PlayerProp {
     g6: 0, g7: 0, g8: 0, g9: 0, g10: 0,
     projection:       projPoints,
     matchup:          `${row.team || ''} vs ${row.oppent || ''}`,
-    propType:         'pts',
+    propType:         'POINTS',
     category:         undefined,
 
     // AppData schema fields
