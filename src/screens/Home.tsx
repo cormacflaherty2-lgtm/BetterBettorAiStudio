@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Bell, Search, X } from "lucide-react";
-import { PropCard } from "../components/PropCard";
+import { PlayerCard } from "../components/PlayerCard";
 import { PropTypeDropdown } from "../components/PropTypeDropdown";
 import { MOCK_PROPS } from "../mockData";
 import { PlayerProp } from "../types";
@@ -206,7 +206,7 @@ export const Home: React.FC<HomeProps> = ({
           </>
         ) : filteredAndSortedProps.length > 0 ? (
           filteredAndSortedProps.map((prop) => (
-            <PropCard key={prop.id} prop={prop} onClick={onPropClick} />
+            <PlayerCard key={prop.id} prop={prop} onClick={onPropClick} />
           ))
         ) : (searchQuery.trim() || activeCategory !== "All Props") ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-500">
@@ -216,7 +216,8 @@ export const Home: React.FC<HomeProps> = ({
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-slate-500">
             <Search size={48} className="mb-4 opacity-20" />
-            <p className="body-text">No players found</p>
+            <p className="body-text">No players available right now</p>
+            <p className="text-[12px] text-slate-600 mt-1">Check back before game time</p>
           </div>
         )}
       </div>

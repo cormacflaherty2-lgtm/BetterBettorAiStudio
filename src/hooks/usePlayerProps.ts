@@ -19,18 +19,23 @@ export function usePlayerProps(_sheetName: string = 'MasterRanking') {
       setLoading(true);
 
       const { data, error: sbError } = await supabase
-        .from('player_props')
+        .from('AppData')
         .select('*')
-        .order('blend_score', { ascending: false });
+        .not('player_name', 'is', null)
+        .order('confidence', { ascending: false })
+        .limit(50);
 
-      if (sbError) throw sbError;
+      if (sbError) {
+        console.error('[usePlayerProps] Full Supabase error:', JSON.stringify(sbError));
+        throw sbError;
+      }
+
+      console.log(`[usePlayerProps] Received ${(data ?? []).length} rows`);
+      if ((data ?? []).length > 0) {
+        console.log('[usePlayerProps] First row (raw):', JSON.stringify(data![0]));
+      }
 
       const mapped = (data ?? []).map(mapSupabaseRow);
-
-      console.log(`[usePlayerProps] Received ${mapped.length} players from Supabase`);
-      if (mapped.length > 0) {
-        console.log('[usePlayerProps] First player:', JSON.stringify(mapped[0]));
-      }
 
       setPlayers(mapped);
       setLastUpdated(new Date());
