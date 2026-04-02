@@ -7,113 +7,127 @@ interface PlayerCardProps {
   onClick: (prop: PlayerProp) => void;
 }
 
-const TIER_BG: Record<string, string> = {
-  S: "bg-[#7C3AED]",
-  A: "bg-[#059669]",
-  B: "bg-[#D97706]",
+const BORDER_GRADIENT: Record<string, string> = {
+  S: "linear-gradient(135deg, rgba(168,85,247,0.6), rgba(168,85,247,0.1) 45%, transparent)",
+  A: "linear-gradient(135deg, rgba(34,197,94,0.6), rgba(34,197,94,0.1) 45%, transparent)",
+  B: "linear-gradient(135deg, rgba(245,158,11,0.6), rgba(245,158,11,0.1) 45%, transparent)",
+};
+
+const TIER_BADGE: Record<string, string> = {
+  S: "bg-[#7C3AED] text-white",
+  A: "bg-[#22C55E] text-black",
+  B: "bg-[#F59E0B] text-black",
+  C: "bg-[#374151] text-white",
+  D: "bg-[#374151] text-white",
 };
 
 export const PlayerCard: React.FC<PlayerCardProps> = ({ prop, onClick }) => {
-  const { hitMiss } = prop;
   const confidence = prop.confidence ?? 0;
   const probHit = prop.probHit ?? 0;
-  const newAlgoDif = prop.newAlgoDif || '—';
   const newAlgoDiffNum = Number(prop.newAlgoDiffNum ?? 0);
+  const edgeSign = newAlgoDiffNum >= 0 ? "+" : "";
+  const edgeDisplay = `${edgeSign}${newAlgoDiffNum.toFixed(1)}`;
 
-  const tierBg = TIER_BG[prop.tier ?? 'C'] ?? "bg-[#6B7280]";
-
-  const confColor =
-    confidence > 70 ? "text-[#22C55E]" :
-    confidence >= 50 ? "text-[#F59E0B]" : "text-[#EF4444]";
-
-  const edgeNumColor = newAlgoDiffNum >= 0 ? "text-[#22C55E]" : "text-[#EF4444]";
-  const edgeNumDisplay = newAlgoDiffNum >= 0
-    ? `+${newAlgoDiffNum.toFixed(1)}`
-    : newAlgoDiffNum.toFixed(1);
+  const borderGradient =
+    BORDER_GRADIENT[prop.tier ?? "C"] ??
+    "linear-gradient(135deg, rgba(168,85,247,0.6), rgba(168,85,247,0.1) 45%, transparent)";
+  const tierBadge = TIER_BADGE[prop.tier ?? "C"] ?? "bg-[#374151] text-white";
 
   return (
     <div
       onClick={() => onClick(prop)}
-      className="bg-[#0D1526] rounded-[20px] border border-white/7 p-4 mb-3 active:scale-[0.98] transition-transform cursor-pointer"
+      style={{ background: borderGradient, padding: "1px", borderRadius: "20px" }}
+      className="mb-3 active:scale-[0.98] transition-transform cursor-pointer"
     >
-      {/* TOP ROW */}
-      <div className="flex justify-between items-start">
-        <div>
-          <p className="text-[17px] font-bold text-white leading-tight">{prop.playerName ?? 'Unknown Player'}</p>
-          <p className="text-[12px] text-white/45 mt-0.5">
-            {prop.team ?? ''} vs {prop.opponent ?? ''}
-          </p>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className={cn("px-2.5 py-0.5 rounded-full text-[11px] font-bold text-white", tierBg)}>
+      <div className="bg-[#080D1A] rounded-[19px] p-4 flex flex-col gap-3">
+        {/* Top row */}
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="text-[17px] font-bold text-white leading-tight">
+              {prop.playerName ?? "Unknown Player"}
+            </p>
+            <p className="text-[12px] text-white/45 mt-0.5">
+              {prop.team ?? ""} vs {prop.opponent ?? ""}
+            </p>
+          </div>
+          <span className={cn("px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0", tierBadge)}>
             {prop.tier}
           </span>
-          {hitMiss === "Hit" && (
-            <span className="w-2 h-2 rounded-full bg-[#22C55E] ml-1.5" />
-          )}
-          {hitMiss === "Miss" && (
-            <span className="w-2 h-2 rounded-full bg-[#EF4444] ml-1.5" />
-          )}
         </div>
-      </div>
 
-      {/* MIDDLE SECTION */}
-      <div className="text-center my-4">
-        <p className="text-[11px] text-white/40 uppercase tracking-[1.5px]">
-          {prop.propType || "POINTS"}
-        </p>
-        <p className="text-[38px] font-bold text-white leading-none mt-1">
-          {prop.projPoints || prop.line}
-        </p>
-        <p className="text-[10px] text-white/35">PROJ</p>
-        <p className="text-[14px] text-white/60 mt-1">Line: {prop.line ?? '—'}</p>
+        {/* Two-column inner panel */}
+        <div
+          className="rounded-xl p-3 grid grid-cols-2 gap-2"
+          style={{ background: "rgba(255,255,255,0.03)" }}
+        >
+          {/* Left: AI Projected */}
+          <div className="flex flex-col">
+            <p className="text-[10px] text-white/40 mb-0.5">AI Projected</p>
+            <p className="text-[30px] font-bold leading-none text-[#A855F7]">
+              {prop.projPoints || "—"}
+            </p>
+          </div>
+          {/* Right: OVER/UNDER + Book Line */}
+          <div className="flex flex-col items-end">
+            <span
+              className={cn(
+                "px-2 py-0.5 rounded-full text-[11px] font-bold mb-1",
+                prop.playType === "OVER"
+                  ? "bg-[#22C55E] text-white"
+                  : "bg-[#EF4444] text-white"
+              )}
+            >
+              {prop.playType}
+            </span>
+            <p className="text-[28px] font-bold text-white leading-none">{prop.line ?? "—"}</p>
+            <p className="text-[10px] text-white/40 mt-0.5">Book Line</p>
+          </div>
+        </div>
 
-        {/* OVER / UNDER buttons */}
-        <div className="flex gap-2 mt-3">
-          <button
-            onClick={(e) => e.stopPropagation()}
-            className={cn(
-              "flex-1 h-9 rounded-[18px] font-bold text-[13px] transition-colors",
-              prop.playType === "OVER"
-                ? "bg-[#22C55E] text-white"
-                : "bg-transparent border border-white/20 text-white/40"
-            )}
+        {/* Confidence bar */}
+        <div>
+          <div className="flex justify-between mb-1.5">
+            <span className="text-[11px] text-white/50">Confidence</span>
+            <span className="text-[11px] font-semibold text-white/80">{confidence} / 100</span>
+          </div>
+          <div className="h-[5px] w-full rounded-full bg-white/10 relative">
+            <div
+              className="h-full rounded-full absolute top-0 left-0"
+              style={{
+                width: `${confidence}%`,
+                background: "linear-gradient(to right, #7C3AED, #A855F7, #22C55E)",
+              }}
+            />
+            {/* Tick at 50% */}
+            <div
+              className="absolute top-0 bottom-0 w-[1px] bg-white/50 z-10"
+              style={{ left: "50%" }}
+            />
+            {/* Tick at 75% */}
+            <div
+              className="absolute top-0 bottom-0 w-[1px] bg-white/50 z-10"
+              style={{ left: "75%" }}
+            />
+          </div>
+          <p className="text-center text-[11px] text-white/60 mt-1.5">Edge {edgeDisplay} pts</p>
+        </div>
+
+        {/* Footer: Prob Hit + Last 5 */}
+        <div className="grid grid-cols-2 gap-2">
+          <div
+            className="rounded-lg p-2.5 flex flex-col items-center"
+            style={{ background: "rgba(255,255,255,0.03)" }}
           >
-            OVER
-          </button>
-          <button
-            onClick={(e) => e.stopPropagation()}
-            className={cn(
-              "flex-1 h-9 rounded-[18px] font-bold text-[13px] transition-colors",
-              prop.playType === "UNDER"
-                ? "bg-[#EF4444] text-white"
-                : "bg-transparent border border-white/20 text-white/40"
-            )}
+            <p className="text-[10px] text-white/40">Prob Hit</p>
+            <p className="text-[14px] font-bold text-white mt-0.5">{probHit}%</p>
+          </div>
+          <div
+            className="rounded-lg p-2.5 flex flex-col items-center"
+            style={{ background: "rgba(255,255,255,0.03)" }}
           >
-            UNDER
-          </button>
-        </div>
-      </div>
-
-      {/* BOTTOM ROW — 3 stat blocks */}
-      <div className="flex justify-between mt-4">
-        {/* Confidence */}
-        <div className="flex flex-col items-center gap-0.5">
-          <span className={cn("text-[15px] font-bold", confColor)}>{confidence ?? 0}%</span>
-          <span className="text-[10px] text-white/40">CONF</span>
-        </div>
-
-        {/* Prob Hit */}
-        <div className="flex flex-col items-center gap-0.5">
-          <span className="text-[15px] font-bold text-white">{probHit ?? 0}%</span>
-          <span className="text-[10px] text-white/40">PROB HIT</span>
-        </div>
-
-        {/* Edge */}
-        <div className="flex flex-col items-center gap-0.5">
-          <span className="text-[15px] font-bold text-white">{newAlgoDif}</span>
-          <span className={cn("text-[12px] font-medium", edgeNumColor)}>{edgeNumDisplay}</span>
-          <span className="text-[10px] text-white/40">EDGE %</span>
+            <p className="text-[10px] text-white/40">Last 5</p>
+            <p className="text-[14px] font-bold text-white mt-0.5">{prop.hitMiss || "—"}</p>
+          </div>
         </div>
       </div>
     </div>

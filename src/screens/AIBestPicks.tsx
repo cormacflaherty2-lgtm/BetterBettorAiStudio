@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Info } from "lucide-react";
-import { PropCard } from "../components/PropCard";
+import { TopPicksCard } from "../components/TopPicksCard";
 import { MOCK_PROPS } from "../mockData";
 import { PlayerProp } from "../types";
 import { cn } from "../lib/utils";
@@ -91,10 +91,10 @@ export const AIBestPicks: React.FC<AIBestPicksProps> = ({ onPropClick, playerPro
       {/* Ranked List */}
       <div className="flex flex-col gap-4">
         {sortedProps.map((prop, idx) => (
-          <PropCard 
-            key={prop.id} 
-            prop={prop} 
-            onClick={onPropClick} 
+          <TopPicksCard
+            key={prop.id}
+            prop={prop}
+            onClick={onPropClick}
             rank={idx + 1}
           />
         ))}
