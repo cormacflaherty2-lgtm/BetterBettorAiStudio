@@ -20,10 +20,11 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
   // Fetch latest data for this specific player when the screen opens
   React.useEffect(() => {
     const fetchLatestData = async () => {
+      if (!supabase) return;
       try {
         setLoading(true);
         const { data, error: sbError } = await supabase
-          .from('player_props')
+          .from('AppData')
           .select('*')
           .eq('player_name', initialProp.player)
           .single();
