@@ -14,6 +14,11 @@ export function usePlayerProps(_sheetName: string = 'MasterRanking') {
       setLoading(true);
       setError(null);
 
+      if (!supabase) {
+        setError('Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your Vercel environment variables and redeploy.');
+        return;
+      }
+
       const { data, error: sbError } = await supabase
         .from('AppData')
         .select('*')
