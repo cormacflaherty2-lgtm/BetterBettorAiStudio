@@ -34,6 +34,8 @@ export const Home: React.FC<HomeProps> = ({
   const [activeCategory, setActiveCategory] = useState("All Props");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [playTypeFilter, setPlayTypeFilter] = useState<"ALL" | "OVER" | "UNDER">("ALL");
+  const [sortMode, setSortMode] = useState<"TOP SCORE" | "TOP EDGE">("TOP SCORE");
 
   const categories = ["All Props", "AI Best Picks", "Popular Picks"];
 
@@ -58,23 +60,37 @@ export const Home: React.FC<HomeProps> = ({
       });
     }
 
+    // Play type filter
+    if (playTypeFilter !== "ALL") {
+      filtered = filtered.filter(p => p.playType === playTypeFilter);
+    }
+
     // Search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(p => 
-        p.player.toLowerCase().includes(query) || 
+      filtered = filtered.filter(p =>
+        p.player.toLowerCase().includes(query) ||
         p.team.toLowerCase().includes(query)
       );
     }
 
     // Sort
     return filtered.sort((a, b) => {
+      if (sortMode === "TOP EDGE") {
+        const ea = Number(a.edge ?? a.newAlgoDiffNum ?? a.diff ?? 0);
+        const eb = Number(b.edge ?? b.newAlgoDiffNum ?? b.diff ?? 0);
+        return eb - ea;
+      }
+      if (sortMode === "TOP SCORE") {
+        return (b.score ?? 0) - (a.score ?? 0);
+      }
+      // Default: tier → diff
       const tierA = TIER_PRIORITY[a.tier] ?? 99;
       const tierB = TIER_PRIORITY[b.tier] ?? 99;
       if (tierA !== tierB) return tierA - tierB;
       return b.diff - a.diff;
     });
-  }, [playerProps, searchQuery, activeCategory]);
+  }, [playerProps, searchQuery, activeCategory, playTypeFilter, sortMode]);
 
   const PropCardSkeleton = () => (
     <div className="bg-[#0F1629] border border-purple-500/15 rounded-2xl p-4 mb-3 animate-pulse">
@@ -197,6 +213,49 @@ export const Home: React.FC<HomeProps> = ({
         ))}
       </div>
 
+      {/* Play Type Filter + Sort Toggle */}
+      <div className="flex items-center justify-between px-5 gap-3">
+        {/* OVER / UNDER pills */}
+        <div className="flex items-center gap-2">
+          {(["ALL", "OVER", "UNDER"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setPlayTypeFilter(f)}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-[11px] font-bold transition-all shrink-0",
+                playTypeFilter === f
+                  ? f === "OVER"
+                    ? "bg-[#22C55E] text-white"
+                    : f === "UNDER"
+                    ? "bg-[#EF4444] text-white"
+                    : "bg-accent text-white"
+                  : "bg-transparent text-text-muted border border-white/10"
+              )}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+
+        {/* Sort toggle */}
+        <div className="flex items-center bg-[#0F1629] border border-white/8 rounded-full p-0.5 shrink-0">
+          {(["TOP SCORE", "TOP EDGE"] as const).map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setSortMode(mode)}
+              className={cn(
+                "px-3 py-1 rounded-full text-[10px] font-bold transition-all",
+                sortMode === mode
+                  ? "bg-accent text-white"
+                  : "text-white/40"
+              )}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Prop Type Dropdown */}
       <PropTypeDropdown activeSheet={activeSheet} onSheetChange={onSheetChange} />
 
@@ -204,6 +263,13 @@ export const Home: React.FC<HomeProps> = ({
       <div className="flex flex-col gap-3 px-5 min-h-[400px]">
         {loading ? (
           <>
+            {/* Loading label with purple pulse */}
+            <div className="flex items-center justify-center gap-2 py-2 mb-1">
+              <div className="w-2 h-2 rounded-full bg-[#A855F7] animate-pulse" />
+              <span className="text-[12px] text-[#A855F7]/70 animate-pulse">
+                Loading today's props...
+              </span>
+            </div>
             <PropCardSkeleton />
             <PropCardSkeleton />
             <PropCardSkeleton />
@@ -228,10 +294,16 @@ export const Home: React.FC<HomeProps> = ({
             <p className="body-text">No props match your filters</p>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-20 text-slate-500">
-            <Search size={48} className="mb-4 opacity-20" />
-            <p className="body-text text-white/30">No players available right now</p>
-            <p className="text-[12px] text-white/20 mt-1">Check back before game time</p>
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-[#A855F7] animate-pulse" />
+              <div className="w-2.5 h-2.5 rounded-full bg-[#A855F7] animate-pulse [animation-delay:150ms]" />
+              <div className="w-2.5 h-2.5 rounded-full bg-[#A855F7] animate-pulse [animation-delay:300ms]" />
+            </div>
+            <p className="text-[14px] text-[#A855F7]/70 animate-pulse">
+              Loading today's props...
+            </p>
+            <p className="text-[11px] text-white/20">Check back before game time</p>
           </div>
         )}
       </div>
