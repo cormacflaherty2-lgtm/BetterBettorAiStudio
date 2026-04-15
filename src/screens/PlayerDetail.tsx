@@ -5,8 +5,9 @@ import {
   BarChart as ReBarChart,
   Bar,
   XAxis,
+  YAxis,
+  CartesianGrid,
   ReferenceLine,
-  Cell,
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
@@ -27,20 +28,42 @@ interface ChartEntry {
   isProjection: boolean;
 }
 
-const ChartTooltip = ({ active, payload }: any) => {
-  if (!active || !payload?.length) return null;
-  const d: ChartEntry = payload[0].payload;
+// Custom bar shape — handles regular bars (purple/red) and the NEXT projection bar
+const GameBarShape = (props: any) => {
+  const { x, y, width, height, isProjection, hit } = props;
+  if (!height || height <= 0) return null;
+  if (isProjection) {
+    return (
+      <rect
+        x={x} y={y} width={width} height={height}
+        fill="rgba(168,85,247,0.4)"
+        stroke="#A855F7" strokeWidth={1.5} strokeDasharray="4 2"
+        rx={3}
+      />
+    );
+  }
   return (
-    <div className="bg-[#0F1629] border border-white/15 rounded-lg px-3 py-2">
-      <p className="text-white font-bold text-[12px]">{d.value} pts</p>
-      {d.isProjection ? (
-        <p className="text-[#C084FC] text-[11px]">AI Projection</p>
-      ) : (
-        <p className={cn("text-[11px] font-semibold", d.hit ? "text-[#A855F7]" : "text-[#EF4444]")}>
-          {d.hit ? "HIT" : "MISS"}
-        </p>
-      )}
-    </div>
+    <rect
+      x={x} y={y} width={width} height={height}
+      fill={hit ? "#A855F7" : "#EF4444"}
+      rx={3}
+    />
+  );
+};
+
+// Custom X-axis tick — "NEXT" is bold and purple
+const XAxisTick = ({ x, y, payload }: any) => {
+  const isNext = payload.value === "NEXT";
+  return (
+    <text
+      x={x} y={y + 10}
+      textAnchor="middle"
+      fill={isNext ? "#A855F7" : "#64748b"}
+      fontWeight={isNext ? "bold" : "normal"}
+      fontSize={isNext ? 10 : 9}
+    >
+      {payload.value}
+    </text>
   );
 };
 
@@ -80,20 +103,24 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
     }
   };
 
-  // Build chart data from last10Games + AI projection as 11th bar
+  const edgeNum = Number(prop.newAlgoDiffNum ?? 0);
+  const edgeDisplay = `${edgeNum >= 0 ? "+" : ""}${edgeNum.toFixed(1)}`;
+  const projValue = prop.projPoints || prop.projection || prop.line;
+
+  // Build chart data from last10Games + NEXT projection bar
   const gameEntries: ChartEntry[] = (prop.last10Games || []).map((val, i) => {
     const hit = prop.playType === "OVER" ? val >= prop.line : val <= prop.line;
     return { label: `G${i + 1}`, value: val, hit, isProjection: false };
   });
   const projEntry: ChartEntry = {
-    label: "PROJ",
-    value: prop.projPoints || prop.projection || prop.line,
+    label: "NEXT",
+    value: projValue,
     hit: false,
     isProjection: true,
   };
   const chartData: ChartEntry[] = [...gameEntries, projEntry];
 
-  // Hit / miss / streak summary (only counts non-zero games)
+  // Hit / miss / streak — only count non-zero games
   const validGames = gameEntries.filter((g) => g.value > 0);
   const hits = validGames.filter((g) => g.hit).length;
   const misses = validGames.filter((g) => !g.hit).length;
@@ -107,8 +134,37 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
   }
   const streakIsHit = validGames.length > 0 && validGames[validGames.length - 1].hit;
 
-  const edgeNum = Number(prop.newAlgoDiffNum ?? 0);
-  const edgeDisplay = `${edgeNum >= 0 ? "+" : ""}${edgeNum.toFixed(1)}`;
+  // Y-axis domain: ceil to next multiple of 5, with 20% headroom
+  const allValues = chartData.map((d) => d.value).concat([prop.line, projValue]);
+  const yMax = Math.ceil((Math.max(...allValues) * 1.2) / 5) * 5;
+  const yTicks = Array.from({ length: Math.floor(yMax / 5) + 1 }, (_, i) => i * 5);
+
+  // ChartTooltip defined inside component to close over prop and edgeNum
+  const ChartTooltip = ({ active, payload }: any) => {
+    if (!active || !payload?.length) return null;
+    const d: ChartEntry = payload[0].payload;
+    return (
+      <div className="bg-[#0F1629] border border-white/15 rounded-lg px-3 py-2 text-left">
+        {d.isProjection ? (
+          <>
+            <p className="text-white font-bold text-[12px]">Next Game Projection</p>
+            <p className="text-[#A855F7] text-[11px]">AI Proj: {d.value} PTS</p>
+            <p className="text-slate-400 text-[11px]">Book Line: {prop.line}</p>
+            <p className={cn("text-[11px] font-semibold", edgeNum >= 0 ? "text-emerald-400" : "text-red-400")}>
+              Edge: {edgeDisplay} pts
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-white font-bold text-[12px]">{d.label} — {d.value} PTS</p>
+            <p className={cn("text-[11px] font-semibold", d.hit ? "text-[#A855F7]" : "text-[#EF4444]")}>
+              {d.hit ? "✅ HIT" : "❌ MISS"} — Line was {prop.line}
+            </p>
+          </>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-6 pb-24 px-5 pt-6">
@@ -160,7 +216,7 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
         <div className="bg-[#0F1629] border border-purple-500/20 rounded-2xl p-4">
           <p className="text-[9px] uppercase tracking-widest text-slate-500">AI Proj</p>
           <p className="text-[28px] font-bold mt-1 bg-gradient-to-b from-purple-300 to-purple-600 bg-clip-text text-transparent leading-tight">
-            {prop.projPoints || prop.projection}
+            {projValue}
           </p>
           <p className="text-[11px] text-slate-500">pts</p>
         </div>
@@ -198,30 +254,7 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
         </div>
       </div>
 
-      {/* Hit / Miss / Streak summary row */}
-      <div className="flex justify-around py-3 bg-[#0F1629] rounded-xl border border-white/5 mx-4">
-        <div className="flex flex-col items-center gap-0.5">
-          <span className="text-[10px] text-white/40 uppercase tracking-wider">Hits</span>
-          <span className="text-[20px] font-bold text-[#A855F7]">{hits}</span>
-        </div>
-        <div className="w-[1px] bg-white/10" />
-        <div className="flex flex-col items-center gap-0.5">
-          <span className="text-[10px] text-white/40 uppercase tracking-wider">Misses</span>
-          <span className="text-[20px] font-bold text-[#EF4444]">{misses}</span>
-        </div>
-        <div className="w-[1px] bg-white/10" />
-        <div className="flex flex-col items-center gap-0.5">
-          <span className="text-[10px] text-white/40 uppercase tracking-wider">Streak</span>
-          <span className={cn(
-            "text-[20px] font-bold",
-            streak > 0 ? (streakIsHit ? "text-[#A855F7]" : "text-[#EF4444]") : "text-slate-500"
-          )}>
-            {streak > 0 ? `${streak}${streakIsHit ? "H" : "M"}` : "—"}
-          </span>
-        </div>
-      </div>
-
-      {/* Bar Chart */}
+      {/* Last 10 Games Chart */}
       <div className="px-4 relative">
         {loading && (
           <div className="absolute inset-0 z-20 bg-canvas/40 backdrop-blur-[1px] flex items-center justify-center rounded-2xl">
@@ -236,44 +269,75 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
           <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-3">
             Last 10 Games vs Line
           </p>
-          <ResponsiveContainer width="100%" height={160}>
-            <ReBarChart data={chartData} barCategoryGap="18%">
+
+          {/* Summary pills */}
+          <div className="flex gap-2 mb-4">
+            <div className="flex-1 rounded-xl py-2.5 flex flex-col items-center bg-[#A855F7]/15 border border-[#A855F7]/30">
+              <span className="text-[18px] font-bold text-[#A855F7] leading-tight">{hits}</span>
+              <span className="text-[9px] uppercase tracking-widest text-[#A855F7]/70">Hits</span>
+            </div>
+            <div className="flex-1 rounded-xl py-2.5 flex flex-col items-center bg-[#EF4444]/15 border border-[#EF4444]/30">
+              <span className="text-[18px] font-bold text-[#EF4444] leading-tight">{misses}</span>
+              <span className="text-[9px] uppercase tracking-widest text-[#EF4444]/70">Misses</span>
+            </div>
+            <div className={cn(
+              "flex-1 rounded-xl py-2.5 flex flex-col items-center border",
+              streak === 0
+                ? "bg-white/5 border-white/10"
+                : streakIsHit
+                  ? "bg-[#22C55E]/15 border-[#22C55E]/30"
+                  : "bg-[#EF4444]/15 border-[#EF4444]/30"
+            )}>
+              <span className={cn(
+                "text-[15px] font-bold leading-tight",
+                streak === 0 ? "text-slate-500"
+                  : streakIsHit ? "text-[#22C55E]" : "text-[#EF4444]"
+              )}>
+                {streak > 0 ? `${streakIsHit ? "🔥" : "❄️"} ${streak}${streakIsHit ? "W" : "L"}` : "—"}
+              </span>
+              <span className="text-[9px] uppercase tracking-widest text-white/40">Streak</span>
+            </div>
+          </div>
+
+          {/* Recharts bar chart */}
+          <ResponsiveContainer width="100%" height={180}>
+            <ReBarChart data={chartData} barCategoryGap="18%" margin={{ top: 5, right: 44, bottom: 0, left: -8 }}>
+              <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.05)" />
               <XAxis
                 dataKey="label"
+                tick={<XAxisTick />}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                domain={[0, yMax]}
+                ticks={yTicks}
                 tick={{ fill: "#64748b", fontSize: 9 }}
                 axisLine={false}
                 tickLine={false}
+                width={20}
               />
               <Tooltip
                 content={<ChartTooltip />}
                 cursor={{ fill: "rgba(255,255,255,0.04)" }}
               />
+              {/* Book line — dashed white */}
               <ReferenceLine
                 y={prop.line}
-                stroke="rgba(255,255,255,0.5)"
+                stroke="rgba(255,255,255,0.7)"
                 strokeDasharray="4 3"
-                label={{
-                  value: `${prop.line}`,
-                  position: "right",
-                  fill: "#64748b",
-                  fontSize: 9,
-                }}
+                label={{ value: `LINE ${prop.line}`, position: "insideTopRight", fill: "#94a3b8", fontSize: 8 }}
               />
-              <Bar dataKey="value" radius={[3, 3, 0, 0]} maxBarSize={26}>
-                {chartData.map((entry, index) => (
-                  <Cell
-                    key={index}
-                    fill={
-                      entry.isProjection
-                        ? "#C084FC"
-                        : entry.hit
-                        ? "#A855F7"
-                        : "#EF4444"
-                    }
-                    fillOpacity={entry.isProjection ? 0.75 : 1}
-                  />
-                ))}
-              </Bar>
+              {/* AI projection — dashed purple (only show if different from line) */}
+              {projValue !== prop.line && (
+                <ReferenceLine
+                  y={projValue}
+                  stroke="rgba(168,85,247,0.8)"
+                  strokeDasharray="4 3"
+                  label={{ value: `PROJ ${projValue}`, position: "insideBottomRight", fill: "#A855F7", fontSize: 8 }}
+                />
+              )}
+              <Bar dataKey="value" shape={<GameBarShape />} maxBarSize={24} />
             </ReBarChart>
           </ResponsiveContainer>
 
@@ -286,7 +350,7 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
               <span className="w-2 h-2 rounded-sm bg-[#EF4444] inline-block" /> Miss
             </span>
             <span className="flex items-center gap-1 text-[10px] text-slate-400">
-              <span className="w-2 h-2 rounded-sm bg-[#C084FC] inline-block" /> Proj
+              <span className="w-2 h-2 rounded-sm bg-[#A855F7]/40 border border-[#A855F7] inline-block" /> Next
             </span>
           </div>
         </div>
@@ -362,7 +426,7 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
           Going <span className="text-white font-semibold">{prop.playType}</span>{" "}
           {prop.line} {(prop.propType || "PTS").toLowerCase()} with{" "}
           <span className="text-[#A855F7] font-semibold">
-            {prop.projPoints || prop.projection} pts
+            {projValue} pts
           </span>{" "}
           projected.{" "}
           <span className="text-white font-semibold">{prop.confidence}%</span> confidence,{" "}
