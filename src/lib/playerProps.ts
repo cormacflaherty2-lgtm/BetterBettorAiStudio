@@ -26,6 +26,24 @@ import { PlayerProp } from '../types';
 
 const TIER_ORDER: Record<string, number> = { S: 0, A: 1, B: 2, C: 3, D: 4 };
 
+/**
+ * Generates deterministic mock game logs for a player.
+ * Same player + line always produces the same 10 values.
+ * Swap this out for real per-game Supabase columns when available.
+ */
+export function generateMockGameLogs(playerName: string, line: number): number[] {
+  let seed = playerName.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) + Math.round(line * 10);
+  const results: number[] = [];
+  for (let i = 0; i < 10; i++) {
+    seed = (seed * 9301 + 49297) % 233280;
+    const rand = seed / 233280;
+    const variance = Math.max(line * 0.4, 4);
+    const raw = line + (rand * 2 - 1) * variance;
+    results.push(Math.round(Math.max(0, raw) * 2) / 2); // round to nearest 0.5
+  }
+  return results;
+}
+
 export function mapSupabaseRow(row: any, index: number): PlayerProp {
   const playerName  = (row.player_name || '').trim();
   const tier        = (row.tier || 'C').toUpperCase();
@@ -82,7 +100,7 @@ export function mapSupabaseRow(row: any, index: number): PlayerProp {
     algoModelBlend:   score,
     biasScore:        Number(row.bias ?? 0),
     tierRank:         TIER_ORDER[tier] ?? 99,
-    last10Games:      [],
+    last10Games:      generateMockGameLogs(playerName, line),
     edgeDisplay:      `${edge >= 0 ? '+' : ''}${edge.toFixed(1)} pts`,
     valueLabel:       tier === 'S' || tier === 'A' ? 'High Value'
                       : tier === 'B' ? 'Medium Value' : 'Low Edge',
