@@ -134,7 +134,7 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
       label: `G${i + 1}`,
       value: val,
       hit,
-      color: hit ? "#A855F7" : "#EF4444",  // pre-computed so recharts can't coerce it
+      color: hit ? "#22C55E" : "#EF4444",  // pre-computed so recharts can't coerce it
       isProjection: false,
     };
   });
@@ -196,30 +196,45 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
   return (
     <div className="flex flex-col gap-6 pb-24 px-5 pt-6">
       {/* Header */}
-      <header className="flex items-center gap-4">
-        <button onClick={onBack} className="w-10 h-10 flex items-center justify-center bg-[#0F1629] rounded-full border border-white/8 shrink-0">
-          <ChevronLeft size={24} className="text-text-primary" />
+      <header className="flex items-center gap-3">
+        <button
+          onClick={onBack}
+          className="w-10 h-10 flex items-center justify-center rounded-full shrink-0"
+          style={{ background: "#0D0D1A", border: "1px solid rgba(168,85,247,0.2)" }}
+        >
+          <ChevronLeft size={22} className="text-white/80" />
         </button>
 
-        <div className="flex items-center gap-4 flex-1">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
           {/* Avatar */}
-          <div className="w-16 h-16 rounded-full border-2 border-accent bg-[#080D1A] flex items-center justify-center overflow-hidden shrink-0">
-            <User size={32} className="text-text-muted" />
+          <div
+            className="w-14 h-14 rounded-full flex items-center justify-center overflow-hidden shrink-0"
+            style={{ border: "2px solid rgba(168,85,247,0.4)", background: "#0D0D1A" }}
+          >
+            <User size={28} className="text-white/30" />
           </div>
 
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <h1 className="text-[20px] font-bold text-white leading-tight">
+          <div className="flex flex-col min-w-0 flex-1">
+            {/* Name + tier badge */}
+            <div className="flex items-center gap-2 min-w-0">
+              <h1
+                className="font-bold text-white truncate"
+                style={{ fontSize: "18px", letterSpacing: "-0.3px", lineHeight: 1.2 }}
+              >
                 {prop.player}
               </h1>
-              <div className={cn(
-                "px-[10px] py-[3px] rounded-full text-[11px] font-bold uppercase text-white",
-                getTierColor(prop.tier)
-              )}>
-                Tier {prop.tier}
-              </div>
+              <span
+                className={cn("rounded-full font-bold uppercase shrink-0 text-white", getTierColor(prop.tier))}
+                style={{ fontSize: "10px", letterSpacing: "1.2px", padding: "2px 8px" }}
+              >
+                {prop.tier}
+              </span>
             </div>
-            <span className="text-[12px] text-text-secondary mt-0.5">
+            {/* Matchup */}
+            <span
+              className="font-normal truncate"
+              style={{ fontSize: "12px", letterSpacing: "0.2px", marginTop: "2px", color: "rgba(255,255,255,0.5)" }}
+            >
               {prop.matchup}
             </span>
           </div>
@@ -227,42 +242,88 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
       </header>
 
       {/* Hero Stats 2x2 Grid */}
-      <div className="grid grid-cols-2 gap-3 px-4 mt-4">
+      <div className="grid grid-cols-2 gap-3 px-4 mt-2">
         {/* Box 1 - Book Line */}
-        <div className="bg-[#0F1629] border border-white/8 rounded-2xl p-4">
-          <p className="text-[9px] uppercase tracking-widest text-slate-500">Book Line</p>
-          <p className="text-[18px] font-bold text-white mt-1">
+        <div
+          className="rounded-2xl p-4"
+          style={{ background: "#0D0D1A", border: "1px solid rgba(168,85,247,0.15)" }}
+        >
+          <p
+            className="font-bold uppercase"
+            style={{ fontSize: "9px", letterSpacing: "1.2px", color: "rgba(255,255,255,0.4)" }}
+          >
+            Book Line
+          </p>
+          <p
+            className="font-bold uppercase mt-1"
+            style={{
+              fontSize: "13px",
+              letterSpacing: "1.2px",
+              color: prop.playType === "OVER" ? "#34D399" : "#F87171",
+            }}
+          >
             {prop.playType}
           </p>
           <p className="text-[22px] font-bold text-white leading-tight">
-            {prop.line} pts
+            {prop.line} <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>pts</span>
           </p>
         </div>
 
         {/* Box 2 - AI Projection */}
-        <div className="bg-[#0F1629] border border-purple-500/20 rounded-2xl p-4">
-          <p className="text-[9px] uppercase tracking-widest text-slate-500">AI Proj</p>
+        <div
+          className="rounded-2xl p-4"
+          style={{ background: "#0D0D1A", border: "1px solid rgba(168,85,247,0.25)" }}
+        >
+          <p
+            className="font-bold uppercase"
+            style={{ fontSize: "9px", letterSpacing: "1.2px", color: "rgba(255,255,255,0.4)" }}
+          >
+            AI Proj
+          </p>
           <p className="text-[28px] font-bold mt-1 bg-gradient-to-b from-purple-300 to-purple-600 bg-clip-text text-transparent leading-tight">
             {projValue}
           </p>
-          <p className="text-[11px] text-slate-500">pts</p>
+          <p
+            className="font-medium"
+            style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)" }}
+          >
+            pts
+          </p>
         </div>
 
         {/* Box 3 - Edge */}
-        <div className="bg-[#0F1629] border border-white/8 rounded-2xl p-4">
-          <p className="text-[9px] uppercase tracking-widest text-slate-500">Edge</p>
-          <p className={cn(
-            "text-[24px] font-bold mt-1 leading-tight",
-            edgeNum >= 0 ? "text-emerald-400" : "text-red-400"
-          )}>
+        <div
+          className="rounded-2xl p-4"
+          style={{ background: "#0D0D1A", border: "1px solid rgba(168,85,247,0.15)" }}
+        >
+          <p
+            className="font-bold uppercase"
+            style={{ fontSize: "9px", letterSpacing: "1.2px", color: "rgba(255,255,255,0.4)" }}
+          >
+            Edge
+          </p>
+          <p className={cn("text-[24px] font-bold mt-1 leading-tight", edgeNum >= 0 ? "text-emerald-400" : "text-red-400")}>
             {edgeDisplay}
           </p>
-          <p className="text-[11px] text-slate-500">pts vs line</p>
+          <p
+            className="font-medium"
+            style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)" }}
+          >
+            pts vs line
+          </p>
         </div>
 
         {/* Box 4 - Confidence */}
-        <div className="bg-[#0F1629] border border-white/8 rounded-2xl p-4">
-          <p className="text-[9px] uppercase tracking-widest text-slate-500">Confidence</p>
+        <div
+          className="rounded-2xl p-4"
+          style={{ background: "#0D0D1A", border: "1px solid rgba(168,85,247,0.15)" }}
+        >
+          <p
+            className="font-bold uppercase"
+            style={{ fontSize: "9px", letterSpacing: "1.2px", color: "rgba(255,255,255,0.4)" }}
+          >
+            Confidence
+          </p>
           <p className={cn(
             "text-[28px] font-bold mt-1 leading-tight",
             prop.confidence >= 75 ? "text-emerald-400" :
@@ -270,10 +331,13 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
           )}>
             {prop.confidence}%
           </p>
-          <div className="mt-1 h-[3px] w-full rounded-full bg-white/10 relative overflow-hidden">
+          <div
+            className="mt-1 w-full rounded-full relative overflow-hidden"
+            style={{ height: "3px", backgroundColor: "rgba(255,255,255,0.08)" }}
+          >
             {prop.confidence > 0 && (
               <div
-                className="h-full rounded-full bg-gradient-to-r from-purple-600 to-emerald-400 relative z-10"
+                className="h-full rounded-full bg-[#A855F7] relative z-10"
                 style={{ width: `${prop.confidence}%` }}
               />
             )}
@@ -299,9 +363,9 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
 
           {/* Summary pills */}
           <div className="flex gap-2 mb-4">
-            <div className="flex-1 rounded-xl py-2.5 flex flex-col items-center bg-[#A855F7]/15 border border-[#A855F7]/30">
-              <span className="text-[18px] font-bold text-[#A855F7] leading-tight">{hits}</span>
-              <span className="text-[9px] uppercase tracking-widest text-[#A855F7]/70">Hits</span>
+            <div className="flex-1 rounded-xl py-2.5 flex flex-col items-center bg-[#22C55E]/15 border border-[#22C55E]/30">
+              <span className="text-[18px] font-bold text-[#22C55E] leading-tight">{hits}</span>
+              <span className="text-[9px] uppercase tracking-widest text-[#22C55E]/70">Hits</span>
             </div>
             <div className="flex-1 rounded-xl py-2.5 flex flex-col items-center bg-[#EF4444]/15 border border-[#EF4444]/30">
               <span className="text-[18px] font-bold text-[#EF4444] leading-tight">{misses}</span>
@@ -372,7 +436,7 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
           {/* Legend */}
           <div className="flex items-center gap-4 mt-2 px-1">
             <span className="flex items-center gap-1 text-[10px] text-slate-400">
-              <span className="w-2 h-2 rounded-sm bg-[#A855F7] inline-block" /> Hit
+              <span className="w-2 h-2 rounded-sm bg-[#22C55E] inline-block" /> Hit
             </span>
             <span className="flex items-center gap-1 text-[10px] text-slate-400">
               <span className="w-2 h-2 rounded-sm bg-[#EF4444] inline-block" /> Miss
