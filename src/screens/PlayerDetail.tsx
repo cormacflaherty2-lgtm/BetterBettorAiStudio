@@ -26,12 +26,15 @@ interface ChartEntry {
   value: number;
   hit: boolean;
   isProjection: boolean;
-  opponent?: string; // shown as tiny sub-label under x-axis tick if present
+  color: string;        // pre-computed fill — avoids recharts bool→string coercion
+  opponent?: string;    // shown as tiny sub-label under x-axis tick if present
 }
 
-// Custom bar shape — handles regular bars (purple/red) and the NEXT projection bar
+// Custom bar shape — handles regular bars (purple/red) and the NEXT projection bar.
+// Uses pre-computed `color` string from data instead of a boolean to avoid the
+// recharts boolean→string coercion bug where `hit: false` becomes "false" (truthy).
 const GameBarShape = (props: any) => {
-  const { x, y, width, height, isProjection, hit } = props;
+  const { x, y, width, height, color, isProjection } = props;
   if (!height || height <= 0) return null;
   if (isProjection) {
     return (
@@ -46,7 +49,7 @@ const GameBarShape = (props: any) => {
   return (
     <rect
       x={x} y={y} width={width} height={height}
-      fill={hit ? "#A855F7" : "#EF4444"}
+      fill={color ?? "#EF4444"}
       rx={3}
     />
   );
@@ -127,12 +130,19 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
   // Build chart data from last10Games + NEXT projection bar
   const gameEntries: ChartEntry[] = (prop.last10Games || []).map((val, i) => {
     const hit = prop.playType === "OVER" ? val >= prop.line : val <= prop.line;
-    return { label: `G${i + 1}`, value: val, hit, isProjection: false };
+    return {
+      label: `G${i + 1}`,
+      value: val,
+      hit,
+      color: hit ? "#A855F7" : "#EF4444",  // pre-computed so recharts can't coerce it
+      isProjection: false,
+    };
   });
   const projEntry: ChartEntry = {
     label: "NEXT",
     value: projValue,
     hit: false,
+    color: "rgba(168,85,247,0.4)",
     isProjection: true,
   };
   const chartData: ChartEntry[] = [...gameEntries, projEntry];
