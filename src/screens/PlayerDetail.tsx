@@ -184,7 +184,7 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
         ) : (
           <>
             <p className="text-white font-bold text-[12px]">{d.label} — {d.value} PTS</p>
-            <p className={cn("text-[11px] font-semibold", d.hit ? "text-[#A855F7]" : "text-[#EF4444]")}>
+            <p className={cn("text-[11px] font-semibold", d.hit ? "text-[#22C55E]" : "text-[#EF4444]")}>
               {d.hit ? "✅ HIT" : "❌ MISS"} — Line was {prop.line}
             </p>
           </>
