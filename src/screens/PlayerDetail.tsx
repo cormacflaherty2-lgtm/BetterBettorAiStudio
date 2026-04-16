@@ -26,6 +26,7 @@ interface ChartEntry {
   value: number;
   hit: boolean;
   isProjection: boolean;
+  opponent?: string; // shown as tiny sub-label under x-axis tick if present
 }
 
 // Custom bar shape — handles regular bars (purple/red) and the NEXT projection bar
@@ -51,19 +52,35 @@ const GameBarShape = (props: any) => {
   );
 };
 
-// Custom X-axis tick — "NEXT" is bold and purple
-const XAxisTick = ({ x, y, payload }: any) => {
+// Custom X-axis tick — "NEXT" is bold and purple; shows opponent sub-label if present
+const XAxisTick = ({ x, y, payload, data }: any) => {
   const isNext = payload.value === "NEXT";
+  const entry: ChartEntry | undefined = (data ?? []).find(
+    (d: ChartEntry) => d.label === payload.value
+  );
+  const opp = entry?.opponent;
   return (
-    <text
-      x={x} y={y + 10}
-      textAnchor="middle"
-      fill={isNext ? "#A855F7" : "#64748b"}
-      fontWeight={isNext ? "bold" : "normal"}
-      fontSize={isNext ? 10 : 9}
-    >
-      {payload.value}
-    </text>
+    <g>
+      <text
+        x={x} y={y + 10}
+        textAnchor="middle"
+        fill={isNext ? "#A855F7" : "#64748b"}
+        fontWeight={isNext ? "bold" : "normal"}
+        fontSize={isNext ? 10 : 9}
+      >
+        {payload.value}
+      </text>
+      {opp && !isNext && (
+        <text
+          x={x} y={y + 20}
+          textAnchor="middle"
+          fill="#475569"
+          fontSize={7}
+        >
+          {opp}
+        </text>
+      )}
+    </g>
   );
 };
 
@@ -305,9 +322,10 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
               <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.05)" />
               <XAxis
                 dataKey="label"
-                tick={<XAxisTick />}
+                tick={<XAxisTick data={chartData} />}
                 axisLine={false}
                 tickLine={false}
+                height={28}
               />
               <YAxis
                 domain={[0, yMax]}
