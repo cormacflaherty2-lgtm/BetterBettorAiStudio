@@ -134,7 +134,7 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
       label: `G${i + 1}`,
       value: val,
       hit,
-      color: hit ? "#A855F7" : "#EF4444",  // pre-computed so recharts can't coerce it
+      color: hit ? "#22C55E" : "#EF4444",  // pre-computed so recharts can't coerce it
       isProjection: false,
     };
   });
@@ -299,9 +299,9 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
 
           {/* Summary pills */}
           <div className="flex gap-2 mb-4">
-            <div className="flex-1 rounded-xl py-2.5 flex flex-col items-center bg-[#A855F7]/15 border border-[#A855F7]/30">
-              <span className="text-[18px] font-bold text-[#A855F7] leading-tight">{hits}</span>
-              <span className="text-[9px] uppercase tracking-widest text-[#A855F7]/70">Hits</span>
+            <div className="flex-1 rounded-xl py-2.5 flex flex-col items-center bg-[#22C55E]/15 border border-[#22C55E]/30">
+              <span className="text-[18px] font-bold text-[#22C55E] leading-tight">{hits}</span>
+              <span className="text-[9px] uppercase tracking-widest text-[#22C55E]/70">Hits</span>
             </div>
             <div className="flex-1 rounded-xl py-2.5 flex flex-col items-center bg-[#EF4444]/15 border border-[#EF4444]/30">
               <span className="text-[18px] font-bold text-[#EF4444] leading-tight">{misses}</span>
@@ -372,7 +372,7 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
           {/* Legend */}
           <div className="flex items-center gap-4 mt-2 px-1">
             <span className="flex items-center gap-1 text-[10px] text-slate-400">
-              <span className="w-2 h-2 rounded-sm bg-[#A855F7] inline-block" /> Hit
+              <span className="w-2 h-2 rounded-sm bg-[#22C55E] inline-block" /> Hit
             </span>
             <span className="flex items-center gap-1 text-[10px] text-slate-400">
               <span className="w-2 h-2 rounded-sm bg-[#EF4444] inline-block" /> Miss
