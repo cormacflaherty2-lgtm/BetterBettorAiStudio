@@ -1,0 +1,40 @@
+{
+  "_meta": {
+    "description": "Premier League team shot baselines per 90 minutes — 2025/26 season averages",
+    "last_updated": "2026-04-18",
+    "source": "Aggregated from Opta / FBref",
+    "note": "DEFAULT_TOP6/MID/BOTTOM used when team not found. Classify by position: 1-6=TOP6, 7-14=MID, 15-20=BOTTOM"
+  },
+  "teams": {
+    "Manchester City":    15.2,
+    "Arsenal":            14.8,
+    "Liverpool":          15.5,
+    "Chelsea":            13.9,
+    "Manchester United":  12.8,
+    "Tottenham":          13.4,
+    "Newcastle":          13.1,
+    "Aston Villa":        13.0,
+    "Brighton":           14.2,
+    "Brentford":          11.8,
+    "Fulham":             11.5,
+    "Wolves":             11.2,
+    "Everton":            10.8,
+    "Crystal Palace":     11.0,
+    "Nottm Forest":       11.3,
+    "West Ham":           11.6,
+    "Bournemouth":        11.4,
+    "Leicester":          10.5,
+    "Southampton":        10.1,
+    "Ipswich":            10.3
+  },
+  "defaults": {
+    "DEFAULT_TOP6":   14.5,
+    "DEFAULT_MID":    12.0,
+    "DEFAULT_BOTTOM": 10.0
+  },
+  "home_away_multiplier": {
+    "home": 1.13,
+    "away": 0.87
+  },
+  "league_avg_shots_conceded": 12.2
+}

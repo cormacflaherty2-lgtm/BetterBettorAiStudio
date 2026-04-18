@@ -1,0 +1,21 @@
+name,team,role,season_avg_shots,season_avg_sot,l5_avg_shots,l5_avg_sot,minutes_per_game,apps,goals,assists,notes
+Erling Haaland,Manchester City,CF,4.00,1.82,4.20,1.90,88.5,32,26,6,Elite PL striker; leads league in shots on target
+Mohamed Salah,Liverpool,WF_inside,3.80,1.75,3.60,1.65,87.2,31,22,14,World-class inside forward; elite SCA rate
+Bukayo Saka,Arsenal,WF_inside,2.90,1.25,3.10,1.20,88.0,30,14,12,Inverted winger; high volume from right channel
+Cole Palmer,Chelsea,AM,3.10,1.40,3.40,1.55,85.3,30,19,9,Free-roaming AM; high xG from late runs
+Alexander Isak,Newcastle,CF,3.50,1.60,3.70,1.70,86.0,28,18,5,Prolific CF; clinical with high SOT rate
+Heung-Min Son,Tottenham,WF_inside,2.70,1.15,2.50,1.10,84.5,29,12,8,Cuts inside from left; shots drop later in season
+Ollie Watkins,Aston Villa,CF,3.20,1.45,3.00,1.35,87.0,31,16,10,High press CF; benefits from Villa's direct play
+Marcus Rashford,Aston Villa,WF_wide,2.40,1.00,2.60,1.10,82.0,26,10,7,Wide forward; more direct under new system
+Danny Welbeck,Brighton,CF,2.10,0.90,1.80,0.75,78.5,24,8,4,Hold-up CF; lower volume but consistent
+Jarrod Bowen,West Ham,WF_inside,2.60,1.05,2.80,1.15,85.5,29,11,9,Inside forward; good late-run threat
+Dominic Solanke,Tottenham,CF,2.80,1.20,2.60,1.10,84.0,30,13,4,Box CF; solid shot volume for mid-table team
+Bryan Mbeumo,Brentford,WF_inside,3.00,1.35,3.20,1.40,86.5,31,17,6,Top performer for Brentford; excellent xG
+Yoane Wissa,Brentford,CF,2.50,1.10,2.70,1.20,82.0,28,14,3,Energetic striker; higher output when starting
+Sandro Tonali,Newcastle,CM_box,1.80,0.70,1.90,0.75,84.0,28,7,5,Box-to-box; arrives late with decent shot volume
+Martin Odegaard,Arsenal,AM,2.40,1.00,2.60,1.05,85.5,29,10,11,PL top AM; dictates play and shoots from range
+Declan Rice,Arsenal,CM_deep,1.20,0.45,1.30,0.50,87.5,31,7,8,Deep CM role; occasional long-range efforts
+Rodri,Manchester City,DM,0.90,0.35,0.80,0.30,83.0,25,3,6,True DM; minimal shots but precise from set pieces
+Trent Alexander-Arnold,Liverpool,FB_attacking,1.60,0.55,1.70,0.60,86.0,29,5,14,Attacking FB; high shot volume from delivery
+Virgil van Dijk,Liverpool,CB_aerial,0.80,0.30,0.70,0.25,88.0,32,3,2,Aerial threat at set pieces; negligible open-play shots
+Ruben Dias,Manchester City,CB_defensive,0.50,0.18,0.40,0.15,87.5,30,2,1,Pure defender; shots only at corners
