@@ -345,6 +345,120 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
         </div>
       </div>
 
+      {/* Matchup Context Pills — Task 2 */}
+      <div className="flex flex-row flex-wrap gap-[6px] px-4">
+        {prop.isHome !== undefined && (
+          <span
+            className="rounded-full text-[10px] font-semibold px-[10px] py-[4px]"
+            style={{
+              background: "rgba(255,255,255,0.07)",
+              color: prop.isHome ? "#60A5FA" : "#94A3B8",
+            }}
+          >
+            {prop.isHome ? "HOME" : "AWAY"}
+          </span>
+        )}
+        {prop.opponent && (
+          <span
+            className="rounded-full text-[10px] font-semibold px-[10px] py-[4px] text-white"
+            style={{ background: "rgba(255,255,255,0.07)" }}
+          >
+            vs {prop.opponent}
+          </span>
+        )}
+        {(prop.avgLine ?? 0) > 0 && (
+          <span
+            className="rounded-full text-[10px] font-semibold px-[10px] py-[4px] text-[#FCD34D]"
+            style={{ background: "rgba(255,255,255,0.07)" }}
+          >
+            AVG LINE {prop.avgLine}
+          </span>
+        )}
+        {(prop.biasScore ?? 0) !== 0 && (
+          <span
+            className="rounded-full text-[10px] font-semibold px-[10px] py-[4px]"
+            style={{
+              background: "rgba(255,255,255,0.07)",
+              color: (prop.biasScore ?? 0) >= 0 ? "#34D399" : "#F87171",
+            }}
+          >
+            BIAS {(prop.biasScore ?? 0) >= 0 ? "+" : ""}{(prop.biasScore ?? 0).toFixed(1)}
+          </span>
+        )}
+      </div>
+
+      {/* Algorithm Agreement Meter — Task 3 */}
+      <div className="px-4 flex flex-col gap-3">
+        <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-white/40">
+          Algorithm Agreement
+        </p>
+        {[
+          { label: "N ALGO",  val: prop.nAlgo  ?? 0 },
+          { label: "M MODEL", val: prop.mModel ?? 0 },
+          { label: "O ALGO",  val: prop.oAlgo  ?? 0 },
+        ].map(({ label, val }) => {
+          const filled = Math.min(1, Math.abs(val) / 50);
+          const color = val >= 0 ? "#34D399" : "#F87171";
+          return (
+            <div key={label} className="flex items-center gap-3">
+              <span className="text-[11px] text-white/60" style={{ width: 70 }}>{label}</span>
+              <div className="flex-1 h-[4px] rounded-full" style={{ background: "rgba(255,255,255,0.08)" }}>
+                <div className="h-full rounded-full" style={{ width: `${filled * 100}%`, background: color }} />
+              </div>
+              <span className="text-[11px] w-10 text-right font-semibold" style={{ color }}>
+                {val >= 0 ? "+" : ""}{val.toFixed(1)}
+              </span>
+            </div>
+          );
+        })}
+        {([prop.nAlgo ?? 0, prop.mModel ?? 0, prop.oAlgo ?? 0].every(v => v > 0) ||
+          [prop.nAlgo ?? 0, prop.mModel ?? 0, prop.oAlgo ?? 0].every(v => v < 0)) && (
+          <span className="self-start text-[10px] font-bold text-[#34D399] bg-[rgba(52,211,153,0.12)] rounded-full px-3 py-1">
+            ✅ ALL AGREE
+          </span>
+        )}
+      </div>
+
+      {/* Edge Breakdown 2x2 Grid — Task 4 */}
+      <div className="px-4 flex flex-col gap-2">
+        <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-white/40">
+          Edge Breakdown
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            {
+              label: "LE EDGE",
+              val: `${(prop.edge ?? prop.newAlgoDiffNum ?? 0) >= 0 ? "+" : ""}${(prop.edge ?? prop.newAlgoDiffNum ?? 0).toFixed(1)}`,
+              color: (prop.edge ?? 0) > 3 ? "#34D399" : (prop.edge ?? 0) < 0 ? "#F87171" : "white",
+            },
+            {
+              label: "CONFIDENCE",
+              val: `${prop.confidence ?? 0}%`,
+              color: (prop.confidence ?? 0) > 65 ? "#34D399" : (prop.confidence ?? 0) < 40 ? "#F87171" : "white",
+            },
+            {
+              label: "N VALUE",
+              val: (prop.nValue ?? 0).toFixed(2),
+              color: "white",
+            },
+            {
+              label: "O VALUE",
+              val: (prop.oValue ?? 0).toFixed(2),
+              color: "white",
+            },
+          ].map(({ label, val, color }) => (
+            <div
+              key={label}
+              className="rounded-xl p-3 flex flex-col gap-1"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(168,85,247,0.12)" }}
+            >
+              <span className="text-[9px] font-bold uppercase tracking-[1.2px] text-white/40">{label}</span>
+              <span className="text-[20px] font-bold" style={{ color }}>{val}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Last 10 Games Chart */}
       <div className="px-4 relative">
         {loading && (
@@ -445,6 +559,9 @@ export const PlayerDetail: React.FC<PlayerDetailProps> = ({ prop: initialProp, o
               <span className="w-2 h-2 rounded-sm bg-[#A855F7]/40 border border-[#A855F7] inline-block" /> Next
             </span>
           </div>
+          {!prop.projPoints && (
+            <p className="text-[10px] text-white/30 text-center mt-1">No projection available</p>
+          )}
         </div>
       </div>
 

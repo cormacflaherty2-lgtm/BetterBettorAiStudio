@@ -58,6 +58,14 @@ export interface PlayerProp {
   hitMiss: string;
   avgLine: number;
   agree: number;
+
+  // Algorithm agreement fields (from AppData if columns exist)
+  isHome?: boolean;
+  nAlgo?: number;
+  mModel?: number;
+  oAlgo?: number;
+  nValue?: number;
+  oValue?: number;
 }
 
 export interface Alert {
