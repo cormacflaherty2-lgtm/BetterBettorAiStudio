@@ -6,3 +6,11 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Generated model output
+gw*_results.csv
