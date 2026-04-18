@@ -128,5 +128,13 @@ export function mapSupabaseRow(row: any, index: number): PlayerProp {
     hitMiss,
     avgLine,
     agree,
+
+    // Optional algorithm fields — undefined when Supabase column is absent
+    isHome:  row.is_home  != null ? Boolean(row.is_home)  : undefined,
+    nAlgo:   row.n_algo   != null ? Number(row.n_algo)    : undefined,
+    mModel:  row.m_model  != null ? Number(row.m_model)   : undefined,
+    oAlgo:   row.o_algo   != null ? Number(row.o_algo)    : undefined,
+    nValue:  row.n_value  != null ? Number(row.n_value)   : undefined,
+    oValue:  row.o_value  != null ? Number(row.o_value)   : undefined,
   };
 }

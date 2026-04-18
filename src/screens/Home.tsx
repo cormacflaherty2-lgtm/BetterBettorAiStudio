@@ -256,6 +256,51 @@ export const Home: React.FC<HomeProps> = ({
         </div>
       </div>
 
+      {/* 🔥 TOP PICKS TODAY banner */}
+      {playerProps.length > 0 && (
+        <div className="px-5 flex flex-col gap-2">
+          <p className="text-[12px] font-bold uppercase tracking-[1.2px] text-[#A855F7]">
+            🔥 Top Picks Today
+          </p>
+          <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
+            {[...playerProps]
+              .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+              .slice(0, 5)
+              .map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => onPropClick(p)}
+                  className="shrink-0 w-[140px] h-[90px] rounded-xl p-3 flex flex-col justify-between active:scale-95 transition-transform"
+                  style={{ background: "#0D0D1A", border: "1px solid rgba(168,85,247,0.2)" }}
+                >
+                  <div className="flex justify-between items-start gap-1">
+                    <p className="text-[13px] font-bold text-white truncate leading-tight flex-1">
+                      {p.playerName ?? p.player ?? "—"}
+                    </p>
+                    <span className="text-[9px] font-bold text-[#A855F7] bg-[rgba(168,85,247,0.15)] rounded-full px-1.5 py-0.5 shrink-0">
+                      {Math.round(p.score ?? 0)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className="text-[9px] font-bold uppercase rounded-full px-2 py-0.5"
+                      style={{
+                        color: p.playType === "OVER" ? "#34D399" : "#F87171",
+                        backgroundColor: p.playType === "OVER" ? "rgba(52,211,153,0.15)" : "rgba(248,113,113,0.15)",
+                      }}
+                    >
+                      {p.playType ?? "—"}
+                    </span>
+                    <span className="text-[12px] font-semibold text-white/80">
+                      {p.line ?? "—"}
+                    </span>
+                  </div>
+                </button>
+              ))}
+          </div>
+        </div>
+      )}
+
       {/* Prop Type Dropdown */}
       <PropTypeDropdown activeSheet={activeSheet} onSheetChange={onSheetChange} />
 
@@ -295,15 +340,8 @@ export const Home: React.FC<HomeProps> = ({
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#A855F7] animate-pulse" />
-              <div className="w-2.5 h-2.5 rounded-full bg-[#A855F7] animate-pulse [animation-delay:150ms]" />
-              <div className="w-2.5 h-2.5 rounded-full bg-[#A855F7] animate-pulse [animation-delay:300ms]" />
-            </div>
-            <p className="text-[14px] text-[#A855F7]/70 animate-pulse">
-              Loading today's props...
-            </p>
-            <p className="text-[11px] text-white/20">Check back before game time</p>
+            <span className="text-4xl">🏀</span>
+            <p className="text-[14px] text-white/40">No props available right now</p>
           </div>
         )}
       </div>
